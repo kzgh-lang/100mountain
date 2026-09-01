@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>100 Peaks (Baiyue) of Taiwan Challenge</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+ --paper:#f3efe7;--panel:#fffdf9;--ink:#282724;--muted:#817b72;
+ --gold:#a87328;--line:#ded7ca;--central:#9b4f3e;--snow:#416f82;--yushan:#6d7650;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;color:var(--ink);background:var(--paper)}
+body{min-height:100vh}
+.app{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(370px,.72fr)}
+.map-side{position:relative;min-height:100vh;background:#dfe6df}
+#map{position:absolute;inset:0}
+.map-header{position:absolute;z-index:700;left:28px;top:24px;max-width:min(650px,calc(100% - 56px));background:rgba(255,253,249,.94);backdrop-filter:blur(8px);padding:17px 21px 18px;border-radius:18px;box-shadow:0 10px 28px rgba(32,31,28,.14);border:1px solid rgba(255,255,255,.8)}
+.eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:#8b8176;font-weight:700}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:31px;line-height:1.08;margin:5px 0 6px;color:#342e27;font-weight:700}
+.zh-title{font-size:16px;color:var(--gold);font-weight:800}
+.legend{position:absolute;z-index:700;left:28px;bottom:25px;background:rgba(255,253,249,.94);padding:10px 13px;border-radius:13px;box-shadow:0 7px 20px rgba(32,31,28,.13);font-size:12px;display:flex;gap:13px;flex-wrap:wrap}
+.legend span{display:flex;gap:6px;align-items:center} .swatch{width:9px;height:9px;border-radius:50%}
+.sidebar{min-height:100vh;background:var(--panel);padding:28px 27px 35px;overflow:auto;box-shadow:-10px 0 32px rgba(50,47,42,.08);z-index:800}
+.score-row{display:flex;align-items:flex-end;justify-content:space-between}
+.score-label{color:var(--muted);font-size:13px} .score{font-size:40px;font-weight:800;letter-spacing:-.04em;color:var(--gold)} .percent{font-size:18px;color:#69635b;font-weight:700}
+.progress{height:9px;background:#ece7de;border-radius:99px;overflow:hidden;margin:10px 0 20px} #progressBar{height:100%;width:0;background:var(--gold);transition:.25s}
+.input-wrap{display:grid;grid-template-columns:1fr auto;gap:8px}
+input{width:100%;min-width:0;border:1.5px solid #cec5b7;background:white;border-radius:12px;padding:13px 14px;font-size:16px;outline:none}
+input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(168,115,40,.11)}
+button{font:inherit;border:0;border-radius:11px;cursor:pointer;font-weight:750}
+#submitBtn{padding:0 18px;background:#302e2a;color:white}
+.message{min-height:34px;padding-top:7px;font-size:13px;color:var(--muted)} .message.ok{color:#56704b} .message.bad{color:#a14e45}
+.group-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:5px 0 18px}
+.route-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:5px 0 18px;max-height:310px;overflow:auto;padding-right:3px}
+.route-card{padding:9px 10px;border:1px solid var(--line);border-radius:11px;background:#faf7f1;cursor:pointer;text-align:left}
+.route-card b{display:block;font-size:12px;margin-bottom:3px}.route-card small{color:var(--muted);font-size:11px}.route-card.active{outline:2px solid rgba(168,115,40,.35);background:#fffaf0}
+.group-card{padding:10px 8px;border:1px solid var(--line);border-radius:11px;background:#faf7f1;cursor:pointer}
+.group-card b{display:block;font-size:13px;margin-bottom:3px} .group-card small{color:var(--muted);font-size:11px}
+.group-card.active{outline:2px solid rgba(168,115,40,.35);background:#fffaf0}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-top:18px;margin-bottom:10px}
+.section-title{font-size:14px;font-weight:850} .filter-label{font-size:11px;color:var(--muted)}
+.found-list{display:flex;flex-wrap:wrap;gap:6px;min-height:34px}
+.chip{border-radius:999px;padding:6px 9px;font-size:12px;border:1px solid rgba(0,0,0,.06);background:#f2ede4}
+.chip.central{background:#f1e3df} .chip.snow{background:#e2edf0} .chip.yushan{background:#e7eadf}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:22px}
+.actions button{padding:10px 8px;background:#eee9e0;color:#625c54} .actions .primary{background:var(--gold);color:white}
+.answers{display:none;margin-top:17px;border-top:1px solid var(--line);padding-top:14px} .answers.show{display:block}
+.range-answer{margin-bottom:17px} .range-answer h3{font-size:14px;margin:0 0 7px}
+.answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:12px;line-height:1.5;color:#5d5852}
+.answer-item.found{font-weight:800;color:#2f6336}
+.source-note{font-size:10.5px;line-height:1.55;color:#9a938a;margin-top:20px;border-top:1px solid var(--line);padding-top:13px}
+.leaflet-popup-content-wrapper{border-radius:12px} .popup-name{font-weight:800;font-size:15px} .popup-meta{font-size:12px;color:#6e675e;margin-top:3px}
+.marker-dot{width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 1px 5px rgba(0,0,0,.35);opacity:.22;transform:scale(.78);transition:.2s}
+.marker-dot.found{opacity:1;transform:scale(1.18)} .marker-dot.revealed{opacity:.75;transform:scale(.95)}
+.marker-central{background:var(--central)} .marker-snow{background:var(--snow)} .marker-yushan{background:var(--yushan)}
+.loading{position:absolute;z-index:700;right:18px;bottom:18px;background:rgba(255,253,249,.92);padding:8px 11px;border-radius:10px;font-size:11px;color:#766f66}
+@media(max-width:900px){
+ .app{grid-template-columns:1fr} .map-side{min-height:58vh} .sidebar{min-height:auto} .map-header{left:16px;top:15px;max-width:calc(100% - 32px)} .legend{left:16px;bottom:16px} h1{font-size:25px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="map-side">
+ <div id="map"></div>
+ <div class="map-header">
+  <div class="eyebrow">TAIWAN MOUNTAIN QUIZ</div>
+  <h1>100 Peaks (Baiyue) of Taiwan Challenge</h1>
+  <div class="zh-title">台灣百岳挑戰</div>
+ </div>
+ <div class="legend">
+  <span><i class="swatch" style="background:var(--central)"></i>中央山脈</span>
+  <span><i class="swatch" style="background:var(--snow)"></i>雪山山脈</span>
+  <span><i class="swatch" style="background:var(--yushan)"></i>玉山山脈</span>
+ </div>
+ <div class="loading" id="loading">正在載入山峰座標…</div>
+</section>
+<aside class="sidebar">
+ <div class="score-row">
+  <div><div class="score-label">已答對</div><div class="score"><span id="count">0</span> / 100</div></div>
+  <div class="percent"><span id="pct">0</span>%</div>
+ </div>
+ <div class="progress"><div id="progressBar"></div></div>
+ <div class="input-wrap">
+  <input id="answer" type="text" placeholder="輸入百岳名稱，例如：玉山" autocomplete="off" autofocus>
+  <button id="submitBtn">送出</button>
+ </div>
+ <div class="message" id="message">輸入任何一座百岳名稱即可開始。</div>
+
+ <div class="section-head"><div class="section-title">依山脈查看進度</div><div class="filter-label" id="filterLabel">顯示全部</div></div>
+ <div class="group-stats" id="groupStats"></div>
+
+ <div class="section-head"><div class="section-title">登山路線進度</div><div class="filter-label" id="routeFilterLabel">顯示全部</div></div>
+ <div class="route-stats" id="routeStats"></div>
+
+ <div class="section-head"><div class="section-title">已答對的山峰</div></div>
+ <div class="found-list" id="foundList"><span style="font-size:12px;color:#938b80">目前尚未答對任何山峰。</span></div>
+
+ <div class="actions">
+   <button class="primary" id="revealBtn">顯示答案</button>
+   <button id="resetBtn">重新開始</button>
+ </div>
+
+ <div class="answers" id="answers"></div>
+ <div class="source-note">
+  百岳名稱與海拔高度：依台北市山岳協會「台灣百岳列表」。山脈分類：依維基百科「台灣百岳」百岳列表之山脈欄位。登山路線分類：依維基百科「台灣百岳」表格之「登山路線」欄位。地圖座標於載入頁面時由中文維基百科 API 取得；底圖改為無地名標籤底圖並疊加地形陰影，以避免直接顯示山名答案。
+ </div>
+</aside>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const peaks = [{"rank": 1, "name": "玉山", "elevation": 3952, "range": "玉山山脈", "aliases": ["玉山主峰", "玉主"], "route": "玉山群峰"}, {"rank": 2, "name": "雪山", "elevation": 3886, "range": "雪山山脈", "aliases": ["雪山主峰", "雪主"], "route": "雪東線"}, {"rank": 3, "name": "玉山東峰", "elevation": 3869, "range": "玉山山脈", "aliases": [], "route": "玉山群峰"}, {"rank": 4, "name": "玉山北峰", "elevation": 3858, "range": "玉山山脈", "aliases": [], "route": "玉山群峰"}, {"rank": 5, "name": "玉山南峰", "elevation": 3844, "range": "玉山山脈", "aliases": [], "route": "玉山群峰"}, {"rank": 6, "name": "秀姑巒山", "elevation": 3805, "range": "中央山脈", "aliases": [], "route": "南二段"}, {"rank": 7, "name": "馬博拉斯山", "elevation": 3785, "range": "中央山脈", "aliases": [], "route": "馬博拉斯橫斷"}, {"rank": 8, "name": "南湖大山", "elevation": 3742, "range": "中央山脈", "aliases": ["南湖"], "route": "北一段"}, {"rank": 9, "name": "東小南山", "elevation": 3709, "range": "玉山山脈", "aliases": [], "route": "玉山群峰"}, {"rank": 10, "name": "中央尖山", "elevation": 3705, "range": "中央山脈", "aliases": ["中央尖"], "route": "北一段"}, {"rank": 11, "name": "雪山北峰", "elevation": 3703, "range": "雪山山脈", "aliases": [], "route": "聖稜線"}, {"rank": 12, "name": "關山", "elevation": 3668, "range": "中央山脈", "aliases": [], "route": "南一段"}, {"rank": 13, "name": "大水窟山", "elevation": 3642, "range": "中央山脈", "aliases": [], "route": "南二段"}, {"rank": 14, "name": "南湖大山東峰", "elevation": 3632, "range": "中央山脈", "aliases": ["南湖東峰"], "route": "北一段"}, {"rank": 15, "name": "東郡大山", "elevation": 3619, "range": "中央山脈", "aliases": [], "route": "東郡山彙"}, {"rank": 16, "name": "奇萊北峰", "elevation": 3607, "range": "中央山脈", "aliases": [], "route": "奇萊連峰"}, {"rank": 17, "name": "向陽山", "elevation": 3603, "range": "中央山脈", "aliases": [], "route": "南二段"}, {"rank": 18, "name": "大劍山", "elevation": 3594, "range": "雪山山脈", "aliases": [], "route": "大劍山稜脈"}, {"rank": 19, "name": "雲峰", "elevation": 3564, "range": "中央山脈", "aliases": [], "route": "南二段"}, {"rank": 20, "name": "奇萊主山", "elevation": 3560, "range": "中央山脈", "aliases": ["奇萊主峰"], "route": "奇萊連峰"}, {"rank": 21, "name": "馬利加南山", "elevation": 3546, "range": "中央山脈", "aliases": [], "route": "馬博拉斯橫斷"}, {"rank": 22, "name": "南湖北山", "elevation": 3536, "range": "中央山脈", "aliases": [], "route": "北一段"}, {"rank": 23, "name": "大雪山", "elevation": 3530, "range": "雪山山脈", "aliases": [], "route": "大雪山稜脈"}, {"rank": 24, "name": "品田山", "elevation": 3524, "range": "雪山山脈", "aliases": [], "route": "武陵四秀"}, {"rank": 25, "name": "玉山西峰", "elevation": 3518, "range": "玉山山脈", "aliases": [], "route": "玉山群峰"}, {"rank": 26, "name": "頭鷹山", "elevation": 3510, "range": "雪山山脈", "aliases": [], "route": "大雪山稜脈"}, {"rank": 27, "name": "三叉山", "elevation": 3496, "range": "中央山脈", "aliases": [], "route": "南二段"}, {"rank": 28, "name": "大霸尖山", "elevation": 3492, "range": "雪山山脈", "aliases": ["大霸"], "route": "大霸群峰"}, {"rank": 29, "name": "南湖大山南峰", "elevation": 3475, "range": "中央山脈", "aliases": ["南湖南峰"], "route": "北一段"}, {"rank": 30, "name": "東巒大山", "elevation": 3468, "range": "中央山脈", "aliases": [], "route": "東郡山彙"}, {"rank": 31, "name": "無明山", "elevation": 3451, "range": "中央山脈", "aliases": [], "route": "北二段"}, {"rank": 32, "name": "巴巴山", "elevation": 3449, "range": "中央山脈", "aliases": [], "route": "北一段"}, {"rank": 33, "name": "馬西山", "elevation": 3443, "range": "中央山脈", "aliases": [], "route": "馬博拉斯橫斷"}, {"rank": 34, "name": "北合歡山", "elevation": 3422, "range": "中央山脈", "aliases": ["合歡山北峰", "合歡北峰", "合歡北"], "route": "合歡群峰"}, {"rank": 35, "name": "合歡山東峰", "elevation": 3421, "range": "中央山脈", "aliases": [], "route": "合歡群峰"}, {"rank": 36, "name": "小霸尖山", "elevation": 3418, "range": "雪山山脈", "aliases": ["小霸"], "route": "大霸群峰"}, {"rank": 37, "name": "合歡山", "elevation": 3417, "range": "中央山脈", "aliases": ["合歡主峰", "合歡山主峰"], "route": "合歡群峰"}, {"rank": 38, "name": "南玉山", "elevation": 3383, "range": "玉山山脈", "aliases": [], "route": "玉山群峰"}, {"rank": 39, "name": "畢祿山", "elevation": 3371, "range": "中央山脈", "aliases": [], "route": "北二段"}, {"rank": 40, "name": "卓社大山", "elevation": 3369, "range": "中央山脈", "aliases": [], "route": "干卓萬群峰"}, {"rank": 41, "name": "奇萊南峰", "elevation": 3358, "range": "中央山脈", "aliases": [], "route": "奇萊連峰"}, {"rank": 42, "name": "南雙頭山", "elevation": 3356, "range": "中央山脈", "aliases": [], "route": "南二段"}, {"rank": 43, "name": "能高山南峰", "elevation": 3349, "range": "中央山脈", "aliases": ["能高南峰"], "route": "能高安東軍"}, {"rank": 44, "name": "志佳陽大山", "elevation": 3345, "range": "雪山山脈", "aliases": [], "route": "志佳陽稜脈"}, {"rank": 45, "name": "白姑大山", "elevation": 3342, "range": "雪山山脈", "aliases": ["白姑", "白狗大山"], "route": "白姑山群"}, {"rank": 46, "name": "八通關山", "elevation": 3335, "range": "中央山脈", "aliases": [], "route": "南二段"}, {"rank": 47, "name": "新康山", "elevation": 3331, "range": "中央山脈", "aliases": [], "route": "新康山列"}, {"rank": 48, "name": "丹大山", "elevation": 3325, "range": "中央山脈", "aliases": [], "route": "丹大山列"}, {"rank": 49, "name": "桃山", "elevation": 3325, "range": "雪山山脈", "aliases": [], "route": "武陵四秀"}, {"rank": 50, "name": "佳陽山", "elevation": 3314, "range": "雪山山脈", "aliases": [], "route": "大劍山稜脈"}, {"rank": 51, "name": "火石山", "elevation": 3310, "range": "雪山山脈", "aliases": [], "route": "大雪山稜脈"}, {"rank": 52, "name": "池有山", "elevation": 3303, "range": "雪山山脈", "aliases": [], "route": "武陵四秀"}, {"rank": 53, "name": "伊澤山", "elevation": 3297, "range": "雪山山脈", "aliases": [], "route": "大霸群峰"}, {"rank": 54, "name": "卑南主山", "elevation": 3295, "range": "中央山脈", "aliases": [], "route": "南一段"}, {"rank": 55, "name": "干卓萬山", "elevation": 3284, "range": "中央山脈", "aliases": [], "route": "干卓萬群峰"}, {"rank": 56, "name": "太魯閣大山", "elevation": 3283, "range": "中央山脈", "aliases": [], "route": "太魯閣山列"}, {"rank": 57, "name": "轆轆山", "elevation": 3279, "range": "中央山脈", "aliases": [], "route": "南二段"}, {"rank": 58, "name": "喀西帕南山", "elevation": 3276, "range": "中央山脈", "aliases": [], "route": "馬博拉斯橫斷"}, {"rank": 59, "name": "內嶺爾山", "elevation": 3275, "range": "中央山脈", "aliases": [], "route": "丹大山列"}, {"rank": 60, "name": "鈴鳴山", "elevation": 3272, "range": "中央山脈", "aliases": [], "route": "北二段"}, {"rank": 61, "name": "郡大山", "elevation": 3265, "range": "玉山山脈", "aliases": ["郡大"], "route": "郡大山列"}, {"rank": 62, "name": "能高山", "elevation": 3262, "range": "中央山脈", "aliases": [], "route": "能高安東軍"}, {"rank": 63, "name": "萬東山西峰", "elevation": 3258, "range": "中央山脈", "aliases": [], "route": "干卓萬群峰"}, {"rank": 64, "name": "劍山", "elevation": 3253, "range": "雪山山脈", "aliases": [], "route": "大劍山稜脈"}, {"rank": 65, "name": "屏風山", "elevation": 3250, "range": "中央山脈", "aliases": [], "route": "奇萊連峰"}, {"rank": 66, "name": "小關山", "elevation": 3249, "range": "中央山脈", "aliases": [], "route": "南一段"}, {"rank": 67, "name": "義西請馬至山", "elevation": 3245, "range": "中央山脈", "aliases": [], "route": "丹大山列"}, {"rank": 68, "name": "牧山", "elevation": 3241, "range": "中央山脈", "aliases": [], "route": "干卓萬群峰"}, {"rank": 69, "name": "玉山前峰", "elevation": 3239, "range": "玉山山脈", "aliases": ["玉前"], "route": "玉山群峰"}, {"rank": 70, "name": "石門山", "elevation": 3237, "range": "中央山脈", "aliases": [], "route": "合歡群峰"}, {"rank": 71, "name": "無雙山", "elevation": 3231, "range": "中央山脈", "aliases": [], "route": "東郡山彙"}, {"rank": 72, "name": "塔關山", "elevation": 3222, "range": "中央山脈", "aliases": ["大關山"], "route": "南橫三星"}, {"rank": 73, "name": "馬比杉山", "elevation": 3211, "range": "中央山脈", "aliases": [], "route": "北一段"}, {"rank": 74, "name": "達芬尖山", "elevation": 3208, "range": "中央山脈", "aliases": [], "route": "南二段"}, {"rank": 75, "name": "雪山東峰", "elevation": 3201, "range": "雪山山脈", "aliases": ["雪東"], "route": "雪東線"}, {"rank": 76, "name": "南華山", "elevation": 3184, "range": "中央山脈", "aliases": ["能高山北峰"], "route": "奇萊連峰"}, {"rank": 77, "name": "關山嶺山", "elevation": 3176, "range": "中央山脈", "aliases": [], "route": "南橫三星"}, {"rank": 78, "name": "海諾南山", "elevation": 3174, "range": "中央山脈", "aliases": [], "route": "南一段"}, {"rank": 79, "name": "中雪山", "elevation": 3173, "range": "雪山山脈", "aliases": [], "route": "大雪山稜脈"}, {"rank": 80, "name": "閂山", "elevation": 3168, "range": "中央山脈", "aliases": [], "route": "北二段"}, {"rank": 81, "name": "甘薯峰", "elevation": 3158, "range": "中央山脈", "aliases": [], "route": "北二段"}, {"rank": 82, "name": "西合歡山", "elevation": 3145, "range": "中央山脈", "aliases": ["合歡山西峰", "合歡西峰"], "route": "合歡群峰"}, {"rank": 83, "name": "審馬陣山", "elevation": 3141, "range": "中央山脈", "aliases": [], "route": "北一段"}, {"rank": 84, "name": "喀拉業山", "elevation": 3133, "range": "雪山山脈", "aliases": [], "route": "武陵四秀"}, {"rank": 85, "name": "庫哈諾辛山", "elevation": 3115, "range": "中央山脈", "aliases": [], "route": "南橫三星"}, {"rank": 86, "name": "加利山", "elevation": 3112, "range": "雪山山脈", "aliases": [], "route": "大霸群峰"}, {"rank": 87, "name": "白石山", "elevation": 3110, "range": "中央山脈", "aliases": [], "route": "能高安東軍"}, {"rank": 88, "name": "磐石山", "elevation": 3106, "range": "中央山脈", "aliases": [], "route": "太魯閣山列"}, {"rank": 89, "name": "帕托魯山", "elevation": 3101, "range": "中央山脈", "aliases": [], "route": "太魯閣山列"}, {"rank": 90, "name": "北大武山", "elevation": 3092, "range": "中央山脈", "aliases": [], "route": "大武地壘"}, {"rank": 91, "name": "西巒大山", "elevation": 3081, "range": "玉山山脈", "aliases": [], "route": "郡大山列"}, {"rank": 92, "name": "塔芬山", "elevation": 3070, "range": "中央山脈", "aliases": [], "route": "南二段"}, {"rank": 93, "name": "立霧主山", "elevation": 3069, "range": "中央山脈", "aliases": [], "route": "太魯閣山列"}, {"rank": 94, "name": "安東軍山", "elevation": 3068, "range": "中央山脈", "aliases": [], "route": "能高安東軍"}, {"rank": 95, "name": "光頭山", "elevation": 3060, "range": "中央山脈", "aliases": [], "route": "能高安東軍"}, {"rank": 96, "name": "羊頭山", "elevation": 3035, "range": "中央山脈", "aliases": [], "route": "北二段"}, {"rank": 97, "name": "布拉克桑山", "elevation": 3026, "range": "中央山脈", "aliases": [], "route": "新康山列"}, {"rank": 98, "name": "駒盆山", "elevation": 3022, "range": "中央山脈", "aliases": [], "route": "馬博拉斯橫斷"}, {"rank": 99, "name": "六順山", "elevation": 2999, "range": "中央山脈", "aliases": [], "route": "丹大山列"}, {"rank": 100, "name": "鹿山", "elevation": 2981, "range": "玉山山脈", "aliases": [], "route": "玉山群峰"}];
+const rangeOrder=["中央山脈","雪山山脈","玉山山脈"];
+const routeOrder=[...new Set(peaks.map(p=>p.route))].sort((a,b)=>a.localeCompare(b,"zh-Hant-TW"));
+const rangeClass={"中央山脈":"central","雪山山脈":"snow","玉山山脈":"yushan"};
+const rangeColor={"中央山脈":"#9b4f3e","雪山山脈":"#416f82","玉山山脈":"#6d7650"};
+
+const map=L.map("map",{zoomControl:false,minZoom:6,maxZoom:15}).setView([23.72,121.03],7);
+L.control.zoom({position:"bottomright"}).addTo(map);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",{
+ maxZoom:18,
+ attribution:'© OpenStreetMap contributors © CARTO'
+}).addTo(map);
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",{
+ maxZoom:18,
+ opacity:0.34,
+ attribution:'Hillshade © Esri'
+}).addTo(map);
+
+const found=new Set();
+const markers=new Map();
+let activeRange="全部";
+let activeRoute="全部";
+let answersVisible=false;
+
+function norm(s){
+ return s.trim().toLowerCase().replace(/[\s　]/g,"").replace(/臺/g,"台");
+}
+function peakMatch(q){
+ const n=norm(q);
+ return peaks.find(p=>norm(p.name)===n || p.aliases.some(a=>norm(a)===n));
+}
+function markerIcon(p,state="hidden"){
+ const cls=rangeClass[p.range];
+ return L.divIcon({
+  className:"",
+  html:`<div class="marker-dot marker-${cls} ${state}"></div>`,
+  iconSize:[14,14],iconAnchor:[7,7],popupAnchor:[0,-7]
+ });
+}
+function updateMarker(p){
+ const m=markers.get(p.name); if(!m) return;
+ const state=found.has(p.name)?"found":(answersVisible?"revealed":"");
+ m.setIcon(markerIcon(p,state));
+ const filterOK=(activeRange==="全部"||p.range===activeRange) && (activeRoute==="全部"||p.route===activeRoute);
+ const shouldShow=filterOK && (found.has(p.name)||answersVisible);
+ if(shouldShow){ if(!map.hasLayer(m))m.addTo(map); }
+ else{ if(map.hasLayer(m))map.removeLayer(m); }
+}
+function updateAllMarkers(){peaks.forEach(updateMarker)}
+
+async function loadCoordinates(){
+ const loading=document.getElementById("loading");
+ const chunks=[];
+ for(let i=0;i<peaks.length;i+=45) chunks.push(peaks.slice(i,i+45));
+ let loaded=0;
+ for(const chunk of chunks){
+   const titles=chunk.map(p=>p.name).join("|");
+   const url="https://zh.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=coordinates&colimit=max&redirects=1&titles="+encodeURIComponent(titles);
+   try{
+     const res=await fetch(url); const data=await res.json();
+     const pages=Object.values(data.query.pages||{});
+     const byTitle={};
+     pages.forEach(pg=>{if(pg.coordinates&&pg.coordinates[0])byTitle[pg.title]=pg.coordinates[0]});
+     chunk.forEach(p=>{
+       let c=byTitle[p.name];
+       if(!c){
+         const pg=pages.find(x=>x.title===p.name || (x.title&&norm(x.title)===norm(p.name)));
+         if(pg&&pg.coordinates&&pg.coordinates[0])c=pg.coordinates[0];
+       }
+       if(c){
+         const m=L.marker([c.lat,c.lon],{icon:markerIcon(p)})
+          .bindPopup(`<div class="popup-name">${p.name}</div><div class="popup-meta">第 ${p.rank} 岳｜${p.elevation.toLocaleString()} 公尺｜${p.range}｜${p.route}</div>`);
+         markers.set(p.name,m); loaded++;
+       }
+     });
+   }catch(e){console.warn(e)}
+ }
+ updateAllMarkers();
+ loading.textContent=`已載入 ${loaded} / 100 座山峰座標`;
+ if(loaded>=95) setTimeout(()=>loading.style.display="none",2200);
+}
+
+function setMessage(text,type=""){
+ const el=document.getElementById("message");el.textContent=text;el.className="message "+type;
+}
+function submitAnswer(){
+ const input=document.getElementById("answer");
+ const q=input.value;
+ if(!q.trim()) return;
+ const p=peakMatch(q);
+ if(!p){setMessage("此名稱不在百岳名單中，請確認山名後再試一次。","bad");return;}
+ if(found.has(p.name)){setMessage(`${p.name} 已經答對過了。`);input.value="";input.focus();return;}
+ found.add(p.name);
+ setMessage(`答對了：${p.name}，海拔 ${p.elevation.toLocaleString()} 公尺，屬於${p.range}；登山路線分類為「${p.route}」。`,"ok");
+ input.value=""; input.focus();
+ updateUI();
+ const m=markers.get(p.name); if(m){if(!map.hasLayer(m))m.addTo(map);m.openPopup();}
+}
+document.getElementById("submitBtn").addEventListener("click",submitAnswer);
+document.getElementById("answer").addEventListener("keydown",e=>{if(e.key==="Enter")submitAnswer()});
+
+function rangeCounts(r){
+ const all=peaks.filter(p=>p.range===r); const n=all.filter(p=>found.has(p.name)).length;
+ return [n,all.length];
+}
+function routeCounts(r){
+ const all=peaks.filter(p=>p.route===r); const n=all.filter(p=>found.has(p.name)).length;
+ return [n,all.length];
+}
+function updateUI(){
+ const n=found.size,pct=Math.round(n);
+ document.getElementById("count").textContent=n;
+ document.getElementById("pct").textContent=pct;
+ document.getElementById("progressBar").style.width=pct+"%";
+ const groups=document.getElementById("groupStats");
+ groups.innerHTML=rangeOrder.map(r=>{
+   const [a,b]=rangeCounts(r);
+   return `<button class="group-card ${activeRange===r?"active":""}" data-range="${r}">
+     <b>${r.replace("山脈","")}</b><small>${a} / ${b}</small></button>`;
+ }).join("");
+ groups.querySelectorAll("button").forEach(btn=>btn.onclick=()=>{
+   activeRange=activeRange===btn.dataset.range?"全部":btn.dataset.range;
+   document.getElementById("filterLabel").textContent=activeRange==="全部"?"顯示全部":"目前："+activeRange;
+   updateUI(); updateAllMarkers();
+ });
+ const list=document.getElementById("foundList");
+ let arr=peaks.filter(p=>found.has(p.name)&&(activeRange==="全部"||p.range===activeRange));
+ list.innerHTML=arr.length?arr.map(p=>`<span class="chip ${rangeClass[p.range]}">${p.name}</span>`).join(""):'<span style="font-size:12px;color:#938b80">此篩選條件下目前沒有已答對的山峰。</span>';
+ renderAnswers(); updateAllMarkers();
+}
+function renderAnswers(){
+ const box=document.getElementById("answers");
+ if(!answersVisible){box.classList.remove("show");return}
+ box.classList.add("show");
+ box.innerHTML=rangeOrder.map(r=>{
+   const arr=peaks.filter(p=>p.range===r);
+   return `<div class="range-answer"><h3>${r}（${arr.length} 座）</h3>
+    <div class="answer-grid">${arr.map(p=>`<div class="answer-item ${found.has(p.name)?"found":""}">${p.rank}. ${p.name}｜${p.elevation} m｜${p.route}</div>`).join("")}</div></div>`;
+ }).join("");
+}
+document.getElementById("revealBtn").addEventListener("click",()=>{
+ answersVisible=!answersVisible;
+ document.getElementById("revealBtn").textContent=answersVisible?"隱藏答案":"顯示答案";
+ renderAnswers();updateAllMarkers();
+});
+document.getElementById("resetBtn").addEventListener("click",()=>{
+ if(!confirm("確定要清除目前的作答紀錄並重新開始嗎？"))return;
+ found.clear();activeRange="全部";activeRoute="全部";answersVisible=false;
+ document.getElementById("revealBtn").textContent="顯示答案";
+ document.getElementById("filterLabel").textContent="顯示全部";
+ document.getElementById("routeFilterLabel").textContent="顯示全部";
+ setMessage("作答紀錄已清除。");
+ updateUI();
+});
+updateUI();
+loadCoordinates();
+</script>
+</body>
+</html>
