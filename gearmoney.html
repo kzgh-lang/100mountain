@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>登山裝備｜裝備庫與行程價值</title>
+<style>
+:root{
+  --bg:#f3efe7;--card:#fffdf9;--ink:#302d28;--muted:#766f65;--gold:#a87328;
+  --gold2:#d8b26f;--line:#e6ddd0;--soft:#f8f3eb;--green:#53634d;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+.page{max-width:1180px;margin:auto;padding:38px 22px 70px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}
+.back{color:var(--ink);text-decoration:none;font-size:14px;font-weight:700}
+.eyebrow{font-size:12px;letter-spacing:.15em;color:var(--gold);font-weight:800;margin-bottom:8px}
+h1{font-family:Georgia,"Noto Serif TC",serif;font-size:clamp(32px,5vw,56px);line-height:1;margin:0 0 12px}
+.subtitle{color:var(--muted);font-size:15px;line-height:1.7;max-width:760px}
+.tabs{display:inline-flex;background:#ebe3d7;border-radius:999px;padding:4px;margin-top:22px}
+.tab{border:0;background:transparent;padding:10px 16px;border-radius:999px;font:inherit;font-size:13px;font-weight:800;color:var(--muted);cursor:pointer}
+.tab.active{background:var(--ink);color:white}
+.summary{display:grid;grid-template-columns:2fr repeat(3,1fr);gap:12px;margin:26px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.stat.primary{background:var(--ink);color:white}
+.stat .label{font-size:12px;letter-spacing:.08em;color:var(--muted);font-weight:800;margin-bottom:8px}
+.stat.primary .label{color:#d9d3ca}
+.stat .value{font-size:27px;font-weight:900;letter-spacing:-.02em}
+.stat.primary .value{font-size:34px}
+.stat .sub{font-size:12px;color:var(--muted);margin-top:6px}
+.stat.primary .sub{color:#cfc7bd}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0 18px}
+.search{flex:1;min-width:220px;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:12px 14px;font:inherit}
+.select{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:12px 14px;font:inherit}
+.category{margin:30px 0 0}
+.category-head{display:flex;align-items:end;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:12px}
+.category-title{font-size:19px;font-weight:900}
+.category-meta{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+.item.trip-selected{border-color:var(--gold2);box-shadow:0 0 0 1px rgba(168,115,40,.08)}
+.check{width:20px;height:20px;accent-color:var(--gold)}
+.brand{font-size:11px;color:var(--gold);font-weight:900;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+.name{font-weight:850;font-size:14px}
+.note{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.45}
+.money{text-align:right;font-weight:900;font-size:14px;white-space:nowrap}
+.paid{text-align:right;font-size:11px;color:var(--green);margin-top:4px}
+.badge{display:inline-block;background:var(--soft);color:var(--muted);font-size:10px;border-radius:999px;padding:3px 7px;margin-left:6px;vertical-align:1px}
+.trip-empty{padding:38px 20px;text-align:center;color:var(--muted);background:var(--card);border:1px dashed var(--line);border-radius:18px}
+.footer-note{margin-top:34px;padding:16px 18px;background:#eee6db;border-radius:16px;color:#655e55;font-size:12px;line-height:1.7}
+.hidden{display:none!important}
+@media(max-width:780px){
+ .summary{grid-template-columns:1fr 1fr}.stat.primary{grid-column:1/-1}
+ .grid{grid-template-columns:1fr}.page{padding:28px 14px 50px}
+ .topbar{align-items:flex-start;flex-direction:column}
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="topbar">
+    <div>
+      <div class="eyebrow">TAIWAN MOUNTAIN TOOLS</div>
+      <h1>我的登山裝備</h1>
+      <div class="subtitle">看看裝備庫到底值多少錢，也可以勾選「本次行程」的裝備，計算這次帶出門的裝備價值。</div>
+      <div class="tabs">
+        <button class="tab active" data-view="library">裝備庫</button>
+        <button class="tab" data-view="trip">本次行程</button>
+      </div>
+    </div>
+    <a class="back" href="index.html">← 返回工具箱</a>
+  </div>
+
+  <section class="summary">
+    <div class="stat primary">
+      <div class="label" id="mainLabel">裝備庫估計零售價值</div>
+      <div class="value" id="totalValue">NT$ 0</div>
+      <div class="sub" id="mainSub">以正常零售價／官方原價估算</div>
+    </div>
+    <div class="stat">
+      <div class="label">裝備數量</div>
+      <div class="value" id="itemCount">0</div>
+      <div class="sub">件</div>
+    </div>
+    <div class="stat">
+      <div class="label">已知實付</div>
+      <div class="value" id="paidKnown">—</div>
+      <div class="sub">只計你有提供買入價的裝備</div>
+    </div>
+    <div class="stat">
+      <div class="label">已知省下</div>
+      <div class="value" id="savedKnown">—</div>
+      <div class="sub">原價 − 已知實付</div>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <input id="search" class="search" placeholder="搜尋品牌或裝備…">
+    <select id="categoryFilter" class="select"><option value="all">全部分類</option></select>
+  </div>
+
+  <div id="content"></div>
+
+  <div class="footer-note">
+    價格用途是做「裝備價值」估算，不是會計帳。現售品優先採官方正常零售價；已停產或找不到台灣官方現售價的品項，以最後常見 MSRP／官方海外售價換算後取整數。你之後若知道更精確型號或價格，只要修改最下方 JavaScript 的 <strong>gear</strong> 資料即可。勾選的「本次行程」會存在這台瀏覽器，不會上傳。
+  </div>
+</main>
+
+<script>
+const gear = [
+{cat:"背負系統",brand:"Osprey",name:"Atmos AG 50",price:14500,note:"台灣官方正常價"},
+{cat:"背負系統",brand:"HANCHOR",name:"MARL X",price:8590,note:"台灣官方正常價"},
+{cat:"背負系統",brand:"Montbell",name:"Versalite Pack 20",price:2600,note:"官方海外價換算估值"},
+{cat:"飲水",brand:"Osprey",name:"Hydraulics 2L Reservoir",price:1600,note:"正常零售價估值"},
+{cat:"飲水",brand:"HydraPak",name:"Flux 1L",price:1350,note:"官方正常價換算估值"},
+{cat:"飲水",brand:"Katadyn",name:"BeFree 1L",price:1850,note:"官方正常價換算估值"},
+
+{cat:"上身衣著",brand:"Icebreaker",name:"Women's 200 Oasis Half Zip Long Sleeve",price:3900,note:"BF200／正常零售價估值"},
+{cat:"貼身層",brand:"Icebreaker",name:"Women's Siren Cami",price:2100,note:"BF150 / IB104708"},
+{cat:"貼身層",brand:"Icebreaker",name:"Women's Cool-Lite Sprite Hipster",price:1500,note:"125 / IB0A5725"},
+{cat:"下身衣著",brand:"Fjällräven",name:"Keb Trousers",price:7600,note:"官方正常零售價換算估值"},
+{cat:"下身衣著",brand:"REI Co-op",name:"Trailmade Pull-On Pants – Women's",price:2550,note:"原價 US$79.95"},
+{cat:"下身衣著",brand:"Rab",name:"Women's Elevation Pants",price:3500,paid:1300,note:"正常原價估值；你約 NT$1,300 購入"},
+{cat:"保暖",brand:"Decathlon",name:"Trek 100 Down Jacket",price:2500,note:"舊款正常售價估值"},
+{cat:"保暖",brand:"Outdoor Research",name:"Women's Coldfront Down Hooded Jacket",price:8900,paid:2200,note:"原價 US$279；你約 NT$2,200 購入"},
+{cat:"保暖",brand:"Kawas",name:"Polartec Alpha Direct",price:3200,note:"依同類台灣正常售價估值"},
+{cat:"雨具",brand:"Montbell",name:"Storm Cruiser GORE-TEX Jacket",price:7800,note:"官方正常價換算估值"},
+{cat:"雨具",brand:"Montbell",name:"U.L. Trekking Umbrella",price:2200,note:"官方正常價換算估值"},
+
+{cat:"足部",brand:"Darn Tough",name:"Merino Hiking Socks – Long",price:1000,note:"正常零售價估值"},
+{cat:"足部",brand:"Merrell",name:"Women's Moab 3 Mid GORE-TEX",price:6250,note:"官方 US$195 換算取整"},
+{cat:"足部",brand:"Montbell",name:"Lock-On Sandals",price:1800,note:"官方正常價換算估值"},
+
+{cat:"頭頸配件",brand:"BUFF",name:"Merino Neckwear",price:1200,note:"正常零售價估值"},
+{cat:"頭頸配件",brand:"Icebreaker",name:"Merino Headband",price:950,note:"正常零售價估值"},
+{cat:"頭頸配件",brand:"BUFF",name:"Windproof / Windstopper Neckwear",price:1500,note:"正常零售價估值"},
+{cat:"頭頸配件",brand:"BUFF",name:"Headband",price:750,note:"正常零售價估值"},
+{cat:"頭頸配件",brand:"Unknown",name:"登山帽",price:1500,note:"依你提供：約 NT$1,500"},
+
+{cat:"導航／電子",brand:"Garmin",name:"tactix Delta Solar",price:35000,note:"最後官方 MSRP US$1,099 換算估值"},
+{cat:"照明",brand:"Petzl",name:"TIKKA 350",price:1250,note:"正常零售價估值"},
+{cat:"照明",brand:"Petzl",name:"CORE Rechargeable Battery",price:1100,note:"正常零售價估值"},
+{cat:"照明",brand:"Montbell",name:"Headlamp Pouch",price:400,note:"正常零售價估值"},
+{cat:"照明",brand:"Nitecore",name:"NU25 400 lm",price:1200,note:"正常零售價估值"},
+
+{cat:"登山杖",brand:"Fizan",name:"Trekking Poles × 2",price:3200,paid:500,note:"以正常成對零售價估值；你特價約 NT$500 購入"},
+{cat:"炊事",brand:"Snow Peak",name:"Titanium Single Cup 300",price:800,note:"官方 US$24.95 換算取整"},
+{cat:"炊事",brand:"Jetboil",name:"MiniMo",price:5700,note:"正常零售價估值"},
+
+{cat:"收納／防水",brand:"Sea to Summit",name:"Dry Bag 15L",price:950,note:"正常零售價估值"},
+{cat:"收納／防水",brand:"Sea to Summit",name:"Dry Bag 20L",price:1100,note:"正常零售價估值"},
+
+{cat:"睡眠系統",brand:"Unknown",name:"蛋殼睡墊",price:600,note:"依你提供：約 NT$600"},
+{cat:"睡眠系統",brand:"Sea to Summit",name:"SP3 Sleeping Bag",price:4200,paid:800,note:"舊款正常售價估值；你特價約 NT$800 購入"},
+
+{cat:"其他",brand:"Montbell",name:"Micro Towel Face",price:550,note:"小尺寸纖維毛巾／正常零售價估值"}
+];
+
+gear.forEach((g,i)=>g.id="g"+(i+1));
+
+const money=n=>"NT$ "+Math.round(n).toLocaleString("zh-TW");
+const cats=[...new Set(gear.map(g=>g.cat))];
+const catFilter=document.getElementById("categoryFilter");
+cats.forEach(c=>catFilter.insertAdjacentHTML("beforeend",`<option value="${c}">${c}</option>`));
+
+let view="library";
+let selected=new Set(JSON.parse(localStorage.getItem("gearTripSelection")||"[]"));
+let query="",cat="all";
+
+function visibleGear(){
+ return gear.filter(g=>{
+   const q=(g.brand+" "+g.name+" "+g.note).toLowerCase();
+   return (cat==="all"||g.cat===cat) && q.includes(query.toLowerCase());
+ });
+}
+function currentGear(){ return view==="library"?gear:gear.filter(g=>selected.has(g.id)); }
+
+function updateSummary(){
+ const arr=currentGear();
+ const total=arr.reduce((s,g)=>s+g.price,0);
+ const paidItems=arr.filter(g=>Number.isFinite(g.paid));
+ const paid=paidItems.reduce((s,g)=>s+g.paid,0);
+ const retailKnown=paidItems.reduce((s,g)=>s+g.price,0);
+ document.getElementById("mainLabel").textContent=view==="library"?"裝備庫估計零售價值":"本次帶出門裝備價值";
+ document.getElementById("mainSub").textContent=view==="library"?"以正常零售價／官方原價估算":"依你勾選的裝備即時計算";
+ document.getElementById("totalValue").textContent=money(total);
+ document.getElementById("itemCount").textContent=arr.length;
+ document.getElementById("paidKnown").textContent=paidItems.length?money(paid):"—";
+ document.getElementById("savedKnown").textContent=paidItems.length?money(retailKnown-paid):"—";
+}
+
+function card(g){
+ const checked=selected.has(g.id)?"checked":"";
+ return `<label class="item ${selected.has(g.id)?"trip-selected":""}">
+   <input class="check" type="checkbox" data-id="${g.id}" ${checked}>
+   <div>
+    <div class="brand">${g.brand}</div>
+    <div class="name">${g.name}${g.paid!=null?'<span class="badge">有買入價</span>':''}</div>
+    <div class="note">${g.note||""}</div>
+   </div>
+   <div>
+    <div class="money">${money(g.price)}</div>
+    ${g.paid!=null?`<div class="paid">實付 ${money(g.paid)}</div>`:""}
+   </div>
+  </label>`;
+}
+
+function render(){
+ let base=visibleGear();
+ if(view==="trip") base=base.filter(g=>selected.has(g.id));
+ const content=document.getElementById("content");
+ if(view==="trip" && !base.length){
+   content.innerHTML=`<div class="trip-empty">尚未勾選任何裝備。切回「裝備庫」勾選這次要帶的物品。</div>`;
+   updateSummary(); return;
+ }
+ const groups=cats.map(c=>[c,base.filter(g=>g.cat===c)]).filter(([,a])=>a.length);
+ content.innerHTML=groups.map(([c,a])=>`
+  <section class="category">
+   <div class="category-head">
+    <div class="category-title">${c}</div>
+    <div class="category-meta">${a.length} 件 · ${money(a.reduce((s,g)=>s+g.price,0))}</div>
+   </div>
+   <div class="grid">${a.map(card).join("")}</div>
+  </section>`).join("");
+ content.querySelectorAll(".check").forEach(ch=>ch.addEventListener("change",()=>{
+   ch.checked?selected.add(ch.dataset.id):selected.delete(ch.dataset.id);
+   localStorage.setItem("gearTripSelection",JSON.stringify([...selected]));
+   render(); updateSummary();
+ }));
+ updateSummary();
+}
+
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
+ view=b.dataset.view;
+ document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));
+ render();
+}));
+document.getElementById("search").addEventListener("input",e=>{query=e.target.value;render()});
+catFilter.addEventListener("change",e=>{cat=e.target.value;render()});
+render();
+</script>
+</body>
+</html>
