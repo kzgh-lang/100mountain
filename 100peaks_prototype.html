@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>台灣百岳大挑戰 Prototype</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:Arial,"Noto Sans TC",sans-serif;background:#f5f1e8;color:#2d2a26}
+.app{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,.75fr)}
+.map-panel{padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.header{width:min(850px,100%);text-align:center;margin-bottom:12px}.kicker{font-size:15px;color:#8b8175;letter-spacing:.12em}
+h1{margin:6px 0;font-size:40px;color:#8f6327}.sub{color:#777067;font-size:16px}
+.map-wrap{width:min(720px,75vh,95%);aspect-ratio:2/3;position:relative}svg{width:100%;height:100%;overflow:visible}
+.taiwan{fill:#e7dfcf;stroke:#8b8175;stroke-width:2.2}.peak-dot{fill:#c9c1b4;opacity:.35;transition:.25s}
+.peak-dot.found{fill:#A87328;opacity:1;filter:drop-shadow(0 0 5px rgba(168,115,40,.45))}
+.peak-dot.revealed{opacity:.8;stroke:#7c5a28;stroke-width:1.2}.peak-label{font-size:12px;fill:#544d45;font-weight:700;opacity:0;pointer-events:none}.peak-label.show{opacity:1}
+.side{background:#fff;padding:30px 26px;box-shadow:-8px 0 30px rgba(0,0,0,.06);overflow:auto}
+.statline{display:flex;justify-content:space-between;align-items:end;gap:16px}.score{font-size:42px;font-weight:900;color:#A87328}.muted{color:#958d84}
+.progress{width:100%;height:12px;background:#eee9e0;border-radius:999px;overflow:hidden;margin:12px 0 26px}.progress>div{height:100%;width:0;background:#A87328;transition:.25s}
+.input-row{display:flex;gap:8px}input{flex:1;min-width:0;padding:14px 15px;border:2px solid #ddd4c7;border-radius:12px;font-size:18px;outline:none}
+input:focus{border-color:#A87328}button{border:0;border-radius:12px;cursor:pointer;font-weight:800}
+#submitBtn{padding:0 18px;background:#2f2b27;color:#fff;font-size:16px}.message{height:28px;padding-top:8px;font-size:14px}.ok{color:#537452}.bad{color:#a44f46}
+.section-title{margin:24px 0 10px;font-size:17px;font-weight:900}.found-list{display:flex;flex-wrap:wrap;gap:8px}.chip{background:#f1eadf;border-radius:999px;padding:7px 10px;font-size:14px}
+.actions{display:flex;gap:8px;margin-top:24px}.actions button{flex:1;padding:11px 8px;background:#ece7df;color:#675f56}.actions button.primary{background:#A87328;color:#fff}
+.answer-list{display:none;margin-top:18px;padding:14px;background:#faf8f3;border-radius:12px;font-size:14px;line-height:1.8}.answer-list.show{display:block}
+.note{margin-top:18px;color:#999188;font-size:12px;line-height:1.5}@media(max-width:900px){.app{grid-template-columns:1fr}.side{box-shadow:0 -8px 30px rgba(0,0,0,.06)}.map-wrap{width:min(620px,90vw)}}
+</style>
+</head>
+<body>
+<div class="app">
+<main class="map-panel">
+<div class="header"><div class="kicker">TAIWAN BAIYUE CHALLENGE</div><h1>⛰️ 台灣百岳大挑戰</h1><div class="sub">你記得幾座？輸入山名，逐座點亮台灣高山。</div></div>
+<div class="map-wrap"><svg id="map" viewBox="0 0 500 750" aria-label="台灣百岳地圖">
+<path class="taiwan" d="M318 28 C342 58 355 93 359 131 C364 170 352 204 347 239 C341 279 346 315 334 354 C322 395 300 429 288 468 C274 510 270 555 248 594 C228 631 196 673 168 708 C149 724 131 709 137 683 C145 650 164 614 176 578 C190 537 192 499 202 458 C211 420 212 382 226 345 C242 305 254 272 263 230 C272 188 272 148 284 109 C294 76 298 48 318 28 Z"/>
+<g id="peaksLayer"></g></svg></div>
+</main>
+<aside class="side">
+<div class="statline"><div><div class="muted">已解鎖</div><div class="score"><span id="count">0</span> / <span id="total">15</span></div></div><div class="muted"><span id="pct">0</span>%</div></div>
+<div class="progress"><div id="progressBar"></div></div>
+<div class="input-row"><input id="answer" placeholder="例如：玉山、雪山、南湖大山" autocomplete="off"><button id="submitBtn">確定</button></div>
+<div id="message" class="message"></div>
+<div class="section-title">已找到的百岳</div><div id="foundList" class="found-list"><span class="muted">還沒有，先輸入一座看看。</span></div>
+<div class="actions"><button id="revealBtn" class="primary">公布解答</button><button id="resetBtn">重新開始</button></div>
+<div id="answerList" class="answer-list"></div>
+<div class="note">Prototype：目前先放 15 座高知名度百岳測試玩法。正式版可擴充至完整 100 座，並加入別名、海拔、山脈／路線分類。</div>
+</aside></div>
+<script>
+const peaks=[
+{name:"玉山",aliases:["玉山主峰"],elevation:3952,lat:23.470,lon:120.957},
+{name:"雪山",aliases:["雪山主峰"],elevation:3885,lat:24.383,lon:121.232},
+{name:"玉山東峰",aliases:[],elevation:3869,lat:23.471,lon:120.965},
+{name:"玉山北峰",aliases:[],elevation:3858,lat:23.488,lon:120.959},
+{name:"玉山南峰",aliases:[],elevation:3844,lat:23.447,lon:120.959},
+{name:"秀姑巒山",aliases:["秀姑巒"],elevation:3829,lat:23.497,lon:121.057},
+{name:"馬博拉斯山",aliases:["馬博"],elevation:3776,lat:23.520,lon:121.067},
+{name:"南湖大山",aliases:["南湖"],elevation:3741,lat:24.362,lon:121.439},
+{name:"東小南山",aliases:[],elevation:3708,lat:23.439,lon:120.963},
+{name:"中央尖山",aliases:["中央尖"],elevation:3698,lat:24.310,lon:121.416},
+{name:"雪山北峰",aliases:["雪北"],elevation:3703,lat:24.415,lon:121.240},
+{name:"關山",aliases:[],elevation:3667,lat:23.228,lon:120.912},
+{name:"大水窟山",aliases:["大水窟"],elevation:3643,lat:23.474,lon:121.038},
+{name:"南湖大山東峰",aliases:["南湖東峰"],elevation:3639,lat:24.366,lon:121.451},
+{name:"東郡大山",aliases:["東郡"],elevation:3617,lat:23.627,lon:121.092}
+];
+const found=new Set();
+const bounds={minLat:21.8,maxLat:25.4,minLon:120.0,maxLon:122.0};
+function project(lat,lon){return{x:110+((lon-bounds.minLon)/(bounds.maxLon-bounds.minLon))*300,y:700-((lat-bounds.minLat)/(bounds.maxLat-bounds.minLat))*640}}
+function norm(s){return s.trim().toLowerCase().replace(/\s+/g,"")}
+function renderPeaks(){
+ const layer=document.getElementById("peaksLayer");layer.innerHTML="";
+ peaks.forEach((p,i)=>{const pos=project(p.lat,p.lon);
+ const c=document.createElementNS("http://www.w3.org/2000/svg","circle");c.setAttribute("cx",pos.x);c.setAttribute("cy",pos.y);c.setAttribute("r","6");c.setAttribute("class","peak-dot");c.setAttribute("id","peak-"+i);layer.appendChild(c);
+ const t=document.createElementNS("http://www.w3.org/2000/svg","text");t.setAttribute("x",pos.x+9);t.setAttribute("y",pos.y-8);t.setAttribute("class","peak-label");t.setAttribute("id","label-"+i);t.textContent=p.name;layer.appendChild(t);});
+}
+function updateUI(){
+ const n=found.size,pct=Math.round(n/peaks.length*100);document.getElementById("count").textContent=n;document.getElementById("total").textContent=peaks.length;document.getElementById("pct").textContent=pct;document.getElementById("progressBar").style.width=pct+"%";
+ const list=document.getElementById("foundList");list.innerHTML=n?[...found].map(name=>`<span class="chip">${name}</span>`).join(""):'<span class="muted">還沒有，先輸入一座看看。</span>';
+ peaks.forEach((p,i)=>{const isFound=found.has(p.name);document.getElementById("peak-"+i).classList.toggle("found",isFound);document.getElementById("label-"+i).classList.toggle("show",isFound);});
+}
+function checkAnswer(){
+ const input=document.getElementById("answer"),msg=document.getElementById("message"),q=norm(input.value);if(!q)return;
+ const peak=peaks.find(p=>norm(p.name)===q||p.aliases.some(a=>norm(a)===q));
+ if(!peak){msg.textContent="找不到呢座（或者佢未加入 prototype）";msg.className="message bad";return;}
+ if(found.has(peak.name)){msg.textContent=`${peak.name} 已經搵到啦。`;msg.className="message";}
+ else{found.add(peak.name);msg.textContent=`✓ ${peak.name}｜${peak.elevation} m`;msg.className="message ok";updateUI();}
+ input.value="";input.focus();
+}
+document.getElementById("submitBtn").addEventListener("click",checkAnswer);
+document.getElementById("answer").addEventListener("keydown",e=>{if(e.key==="Enter")checkAnswer();});
+document.getElementById("revealBtn").addEventListener("click",()=>{
+ const box=document.getElementById("answerList"),showing=box.classList.toggle("show");document.getElementById("revealBtn").textContent=showing?"收起解答":"公布解答";
+ if(showing){box.innerHTML=peaks.map((p,i)=>{document.getElementById("peak-"+i).classList.add("revealed");document.getElementById("label-"+i).classList.add("show");return `${i+1}. ${p.name}｜${p.elevation} m`;}).join("<br>");}
+ else{peaks.forEach((p,i)=>{document.getElementById("peak-"+i).classList.remove("revealed");if(!found.has(p.name))document.getElementById("label-"+i).classList.remove("show");});}
+});
+document.getElementById("resetBtn").addEventListener("click",()=>{found.clear();document.getElementById("message").textContent="";document.getElementById("answerList").classList.remove("show");document.getElementById("revealBtn").textContent="公布解答";peaks.forEach((p,i)=>{document.getElementById("peak-"+i).classList.remove("revealed");document.getElementById("label-"+i).classList.remove("show");});updateUI();});
+renderPeaks();updateUI();
+</script>
+</body>
+</html>
