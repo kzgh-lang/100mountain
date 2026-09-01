@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的百岳進度｜台灣百岳工具箱</title>
+
+<style>
+:root{
+  --paper:#f3efe7;
+  --paper-2:#ebe3d5;
+  --card:#fffaf2;
+  --ink:#332f29;
+  --muted:#7d756b;
+  --line:#d8cdbd;
+  --gold:#a87328;
+  --gold-soft:#e7d7bb;
+  --green:#66705e;
+  --attempt:#9a6f4b;
+  --shadow:0 10px 28px rgba(64,54,42,.07);
+}
+
+*{box-sizing:border-box}
+
+html{scroll-behavior:smooth}
+
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",
+  "PingFang TC","Microsoft JhengHei",sans-serif;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(168,115,40,.08), transparent 24%),
+    radial-gradient(circle at 85% 90%, rgba(102,112,94,.07), transparent 26%),
+    var(--paper);
+}
+
+a{color:inherit}
+
+.page{
+  width:min(1180px,92vw);
+  margin:auto;
+  padding:48px 0 64px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  margin-bottom:42px;
+}
+
+.back{
+  text-decoration:none;
+  font-size:14px;
+  color:var(--muted);
+}
+
+.back:hover{color:var(--gold)}
+
+.site-label{
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.14em;
+  color:#8c8378;
+}
+
+.hero{
+  margin-bottom:30px;
+}
+
+.eyebrow{
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.14em;
+  color:var(--gold);
+  margin-bottom:10px;
+}
+
+h1{
+  margin:0;
+  font-size:clamp(38px,6vw,68px);
+  line-height:1.05;
+  letter-spacing:-.035em;
+}
+
+.subtitle{
+  margin-top:12px;
+  font-family:Georgia,"Times New Roman",serif;
+  color:var(--gold);
+  font-size:clamp(18px,2.3vw,26px);
+  font-weight:700;
+}
+
+.hero p{
+  max-width:690px;
+  color:var(--muted);
+  line-height:1.8;
+  margin:18px 0 0;
+}
+
+.summary{
+  display:grid;
+  grid-template-columns:1.35fr repeat(3,1fr);
+  gap:14px;
+  margin:30px 0 26px;
+}
+
+.stat{
+  background:rgba(255,250,242,.9);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:22px;
+  box-shadow:var(--shadow);
+}
+
+.stat.main{
+  padding:24px;
+}
+
+.stat-label{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:8px;
+}
+
+.big-number{
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:42px;
+  line-height:1;
+  color:var(--gold);
+}
+
+.stat-number{
+  font-size:29px;
+  font-weight:800;
+  line-height:1.1;
+}
+
+.progress{
+  margin-top:15px;
+  height:8px;
+  border-radius:999px;
+  background:#e5ddd1;
+  overflow:hidden;
+}
+
+.progress > span{
+  display:block;
+  height:100%;
+  border-radius:999px;
+  background:var(--gold);
+}
+
+.controls{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin:24px 0 18px;
+}
+
+.search{
+  flex:1 1 240px;
+  min-width:200px;
+  border:1px solid var(--line);
+  background:#fffaf2;
+  color:var(--ink);
+  border-radius:999px;
+  padding:11px 16px;
+  font:inherit;
+  outline:none;
+}
+
+.search:focus{
+  border-color:rgba(168,115,40,.7);
+  box-shadow:0 0 0 3px rgba(168,115,40,.08);
+}
+
+.filter{
+  appearance:none;
+  border:1px solid var(--line);
+  background:#fffaf2;
+  color:var(--muted);
+  border-radius:999px;
+  padding:10px 14px;
+  cursor:pointer;
+  font:inherit;
+  font-size:13px;
+}
+
+.filter.active{
+  background:var(--ink);
+  color:#fff;
+  border-color:var(--ink);
+}
+
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:20px;
+  margin:36px 0 16px;
+}
+
+.section-title h2{
+  margin:0;
+  font-size:25px;
+}
+
+.section-title span{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.groups{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+}
+
+.group{
+  background:rgba(255,250,242,.92);
+  border:1px solid var(--line);
+  border-radius:20px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+
+.group-head{
+  width:100%;
+  border:0;
+  background:transparent;
+  padding:21px 22px 17px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:18px;
+  text-align:left;
+  cursor:pointer;
+  color:var(--ink);
+}
+
+.group-title{
+  font-size:20px;
+  font-weight:850;
+}
+
+.group-meta{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  white-space:nowrap;
+}
+
+.group-count{
+  font-family:Georgia,"Times New Roman",serif;
+  color:var(--gold);
+  font-size:18px;
+  font-weight:700;
+}
+
+.chevron{
+  color:var(--muted);
+  transition:.2s transform;
+}
+
+.group.open .chevron{transform:rotate(180deg)}
+
+.group-progress{
+  margin:0 22px 18px;
+  height:5px;
+  background:#e7dfd3;
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.group-progress span{
+  display:block;
+  height:100%;
+  background:var(--gold);
+}
+
+.group-body{
+  display:none;
+  border-top:1px solid var(--line);
+}
+
+.group.open .group-body{display:block}
+
+.peak{
+  display:grid;
+  grid-template-columns:48px minmax(120px,1.4fr) 74px minmax(110px,1fr);
+  gap:12px;
+  align-items:center;
+  padding:14px 22px;
+  border-bottom:1px solid rgba(216,205,189,.7);
+}
+
+.peak:last-child{border-bottom:0}
+
+.rank{
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:13px;
+  color:#9a9186;
+}
+
+.peak-name{
+  font-weight:800;
+  line-height:1.35;
+}
+
+.alt{
+  display:block;
+  margin-top:3px;
+  font-size:11px;
+  color:#a39a8e;
+  font-weight:500;
+}
+
+.height{
+  color:var(--muted);
+  font-size:13px;
+  white-space:nowrap;
+}
+
+.record{
+  text-align:right;
+  min-width:0;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+  border:1px solid var(--line);
+}
+
+.badge.summit{
+  background:#e7eadf;
+  color:#58604f;
+  border-color:#ced5c2;
+}
+
+.badge.attempt{
+  background:#efe2d6;
+  color:#825f43;
+  border-color:#dfc9b5;
+}
+
+.badge.none{
+  background:#f5f0e8;
+  color:#978f84;
+}
+
+.dates{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.5;
+}
+
+.order{
+  color:var(--gold);
+  font-weight:800;
+}
+
+.note{
+  margin-top:32px;
+  padding:17px 19px;
+  border:1px dashed #cdbfae;
+  border-radius:16px;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.7;
+}
+
+footer{
+  margin-top:42px;
+  padding-top:18px;
+  border-top:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+  color:#989084;
+  font-size:12px;
+}
+
+.hidden{display:none!important}
+
+@media(max-width:850px){
+  .summary{grid-template-columns:repeat(2,1fr)}
+  .stat.main{grid-column:1/-1}
+  .groups{grid-template-columns:1fr}
+}
+
+@media(max-width:600px){
+  .page{width:min(94vw,560px);padding-top:28px}
+  .topbar{margin-bottom:30px}
+  .summary{grid-template-columns:1fr 1fr}
+  .peak{
+    grid-template-columns:38px minmax(0,1fr) 64px;
+    gap:8px;
+    padding:13px 15px;
+  }
+  .record{
+    grid-column:2/4;
+    text-align:left;
+    padding-bottom:3px;
+  }
+  footer{flex-direction:column}
+}
+</style>
+</head>
+
+<body>
+<main class="page">
+
+  <div class="topbar">
+    <a class="back" href="index.html">← 返回台灣百岳工具箱</a>
+    <div class="site-label">TAIWAN MOUNTAIN TOOLS</div>
+  </div>
+
+  <section class="hero">
+    <div class="eyebrow">MY BAIYUE JOURNEY</div>
+    <h1>我的百岳進度</h1>
+    <div class="subtitle">100 Peaks (Baiyue) of Taiwan</div>
+    <p>
+      依登山路線與群峰分類整理個人百岳紀錄。
+      同一座山可記錄多次登頂，也可保留曾嘗試但未登頂的行程。
+    </p>
+  </section>
+
+  <section class="summary">
+    <div class="stat main">
+      <div class="stat-label">百岳完成進度</div>
+      <div class="big-number"><span id="uniqueSummits">0</span> / 100</div>
+      <div class="progress"><span id="overallBar" style="width:0%"></span></div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">登頂紀錄</div>
+      <div class="stat-number" id="summitRecords">0</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">曾嘗試未登頂</div>
+      <div class="stat-number" id="attemptPeaks">0</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">二刷以上</div>
+      <div class="stat-number" id="repeatPeaks">0</div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <input id="search" class="search" type="search" placeholder="搜尋山名">
+    <button class="filter active" data-filter="all">全部</button>
+    <button class="filter" data-filter="summit">已登頂</button>
+    <button class="filter" data-filter="attempt">曾嘗試</button>
+    <button class="filter" data-filter="none">未登頂</button>
+    <button class="filter" data-filter="repeat">二刷以上</button>
+  </div>
+
+  <div class="section-title">
+    <h2>依路線查看</h2>
+    <span>點選分類可展開</span>
+  </div>
+
+  <section id="groups" class="groups"></section>
+
+  <div class="note">
+    此頁面為唯讀個人紀錄。日後要更新，只需要修改 HTML 最下方 JavaScript 中的
+    <strong>myRecords</strong>。新增一次登頂使用
+    <code>status: "summit"</code>；曾嘗試但未登頂使用
+    <code>status: "attempt"</code>。
+  </div>
+
+  <footer>
+    <span>台灣百岳工具箱</span>
+    <span>My Baiyue Journey</span>
+  </footer>
+
+</main>
+
+<script>
+/* =========================================================
+   1. 百岳基本資料
+   目前先依你相片中清楚可辨識的海報分類呈現。
+   其餘百岳先放在「其他百岳」，之後可再按原海報補齊分類。
+   ========================================================= */
+
+const peaks = [
+  ["001","玉山主峰",3952],
+  ["002","雪山主峰",3886],
+  ["003","玉山東峰",3869],
+  ["004","玉山北峰",3858],
+  ["005","玉山南峰",3844],
+  ["006","秀姑巒山",3805],
+  ["007","馬博拉斯山",3785],
+  ["008","南湖大山",3742],
+  ["009","東小南山",3709],
+  ["010","雪山北峰",3703],
+  ["011","中央尖山",3705],
+  ["012","關山",3668],
+  ["013","大水窟山",3642],
+  ["014","南湖大山東峰",3632],
+  ["015","東郡大山",3619],
+  ["016","奇萊北峰",3607],
+  ["017","向陽山",3603],
+  ["018","大劍山",3594],
+  ["019","雲峰",3564],
+  ["020","奇萊主山",3560],
+  ["021","馬利加南山",3546],
+  ["022","南湖北山",3536],
+  ["023","大雪山",3530],
+  ["024","品田山",3524],
+  ["025","玉山西峰",3518],
+  ["026","頭鷹山",3510],
+  ["027","三叉山",3496],
+  ["028","大霸尖山",3492],
+  ["029","南湖大山南峰",3475],
+  ["030","東巒大山",3468],
+  ["031","無明山",3451],
+  ["032","巴巴山",3449],
+  ["033","馬西山",3443],
+  ["034","合歡山北峰",3422],
+  ["035","小霸尖山",3418],
+  ["036","合歡山東峰",3421],
+  ["037","合歡山主峰",3417],
+  ["038","南玉山",3383],
+  ["039","畢祿山",3371],
+  ["040","卓社大山",3369],
+  ["041","奇萊南峰",3358],
+  ["042","南雙頭山",3356],
+  ["043","能高南峰",3349],
+  ["044","白姑大山",3342],
+  ["045","八通關山",3335],
+  ["046","新康山",3331],
+  ["047","丹大山",3325],
+  ["048","桃山",3325],
+  ["049","佳陽山",3314],
+  ["050","火石山",3310],
+  ["051","池有山",3303],
+  ["052","伊澤山",3297],
+  ["053","卑南主山",3295],
+  ["054","志佳陽大山",3345],
+  ["055","干卓萬山",3284],
+  ["056","太魯閣大山",3283],
+  ["057","郡大山",3265],
+  ["058","轆轆山",3279],
+  ["059","喀西帕南山",3276],
+  ["060","內嶺爾山",3275],
+  ["061","鈴鳴山",3272],
+  ["062","能高山",3262],
+  ["063","萬東山西峰",3258],
+  ["064","劍山",3253],
+  ["065","屏風山",3250],
+  ["066","小關山",3249],
+  ["067","義西請馬至山",3245],
+  ["068","牧山",3241],
+  ["069","玉山前峰",3239],
+  ["070","石門山",3237],
+  ["071","無雙山",3231],
+  ["072","塔關山",3222],
+  ["073","馬比杉山",3211],
+  ["074","達芬尖山",3208],
+  ["075","雪山東峰",3201],
+  ["076","南華山",3184],
+  ["077","關山嶺山",3176],
+  ["078","海諾南山",3174],
+  ["079","中雪山",3173],
+  ["080","閂山",3168],
+  ["081","甘薯峰",3158],
+  ["082","合歡山西峰",3145],
+  ["083","審馬陣山",3141],
+  ["084","喀拉業山",3133],
+  ["085","庫哈諾辛山",3115],
+  ["086","加利山",3112],
+  ["087","白石山",3110],
+  ["088","磐石山",3106],
+  ["089","帕托魯山",3101],
+  ["090","北大武山",3092],
+  ["091","西巒大山",3081],
+  ["092","塔芬山",3070],
+  ["093","立霧主山",3069],
+  ["094","安東軍山",3068],
+  ["095","光頭山",3060],
+  ["096","羊頭山",3035],
+  ["097","布拉克桑山",3026],
+  ["098","駒盆山",3022],
+  ["099","六順山",2999],
+  ["100","鹿山",2981]
+].map(([rank,name,height]) => ({rank,name,height}));
+
+/* =========================================================
+   2. 海報分類
+   依實體 poster 的分類與指定順序。
+   ========================================================= */
+
+const posterGroups = [
+  {
+    name:"北一段",
+    peaks:["審馬陣山","南湖北山","南湖大山東峰","馬比杉山","南湖大山","南湖大山南峰","巴巴山","中央尖山"]
+  },
+  {
+    name:"北二段",
+    peaks:["閂山","鈴鳴山","無明山","甘薯峰"]
+  },
+  {
+    name:"雪山西南稜",
+    peaks:["大雪山","雪山主峰","中雪山","頭鷹山","火石山"]
+  },
+  {
+    name:"雪北線",
+    peaks:["雪山東峰","雪山北峰","志佳陽大山"]
+  },
+  {
+    name:"合歡群峰",
+    peaks:["合歡山主峰","合歡山北峰","合歡山西峰","合歡山東峰","石門山"]
+  },
+  {
+    name:"郡大西巒",
+    peaks:["郡大山","西巒大山"]
+  },
+  {
+    name:"能高安東軍",
+    peaks:["能高山","能高南峰","光頭山","白石山","安東軍山"]
+  },
+  {
+    name:"玉山前五峰",
+    peaks:["玉山前峰","玉山西峰","玉山主峰","玉山東峰","玉山北峰"]
+  },
+  {
+    name:"玉山後四峰",
+    peaks:["玉山南峰","東小南山","南玉山","鹿山"]
+  },
+  {
+    name:"南橫三星",
+    peaks:["庫哈諾辛山","塔關山","關山嶺山"]
+  },
+  {
+    name:"大小劍",
+    peaks:["大劍山","劍山","佳陽山"]
+  },
+  {
+    name:"南疆聖山",
+    peaks:["北大武山"]
+  },
+  {
+    name:"奇萊連峰",
+    peaks:["奇萊主山","奇萊南峰","南華山"]
+  },
+  {
+    name:"奇萊東稜",
+    peaks:["奇萊北峰","太魯閣大山","立霧主山","帕托魯山","磐石山"]
+  },
+  {
+    name:"新康橫斷",
+    peaks:["新康山","布拉克桑山"]
+  },
+  {
+    name:"南一段",
+    peaks:["關山","海諾南山","小關山","卑南主山"]
+  },
+  {
+    name:"南二段",
+    peaks:["八通關山","大水窟山","達芬尖山","塔芬山","雲峰","轆轆山","南雙頭山","三叉山","向陽山"]
+  },
+  {
+    name:"南三段",
+    peaks:["無雙山","東巒大山","東郡大山","內嶺爾山","義西請馬至山","丹大山","六順山"]
+  },
+  {
+    name:"干卓萬橫斷",
+    peaks:["干卓萬山","卓社大山","牧山","萬東山西峰"]
+  },
+  {
+    name:"馬博橫斷",
+    peaks:["秀姑巒山","馬博拉斯山","馬利加南山","駒盆山","馬西山","喀西帕南山"]
+  },
+  {
+    name:"大霸群峰",
+    peaks:["大霸尖山","小霸尖山","加利山","伊澤山"]
+  },
+  {
+    name:"武陵四秀",
+    peaks:["桃山","喀拉業山","池有山","品田山"]
+  },
+  {
+    name:"中橫四辣",
+    peaks:["畢祿山","羊頭山","白姑大山","屏風山"]
+  }
+];
+
+/* poster 顯示名稱 → 百岳正式名稱 */
+const displayNames = {
+  "南湖大山東峰":"南湖東峰（南湖大山東峰）",
+  "南湖大山南峰":"南湖南峰（南湖大山南峰）",
+  "雪山主峰":"雪山主峰（雪山）",
+  "合歡山主峰":"合歡山主峰（合歡山）",
+  "合歡山北峰":"合歡山北峰（北合歡山）",
+  "合歡山西峰":"合歡山西峰（西合歡山）",
+  "能高南峰":"能高南峰（能高山南峰）",
+  "玉山主峰":"玉山主峰（玉山）"
+};
+
+/* poster 名稱 → 目前 peaks 資料中的正式 key */
+const posterToPeak = {
+  "南湖大山東峰":"南湖大山東峰",
+  "南湖大山南峰":"南湖大山南峰",
+  "雪山主峰":"雪山主峰",
+  "合歡山主峰":"合歡山主峰",
+  "合歡山北峰":"合歡山北峰",
+  "合歡山西峰":"合歡山西峰",
+  "能高南峰":"能高南峰",
+  "玉山主峰":"玉山主峰"
+};
+
+/* =========================================================
+   3. 你的個人紀錄
+   日後只需要改這一段。
+
+   status:
+   "summit"  = 登頂
+   "attempt" = 曾嘗試但未登頂
+
+   order:
+   你實體海報圈住的「第幾座百岳」。
+   ========================================================= */
+
+const myRecords = {
+  "合歡山東峰": [
+    { date:"2021-10-23", status:"summit", order:1 }
+  ],
+  "玉山主峰": [
+    { date:"2021-11-03", status:"summit", order:2 }
+  ],
+  "雪山東峰": [
+    { date:"2022-02-04", status:"summit", order:3 }
+  ],
+  "塔關山": [
+    { date:"2023-12-10", status:"summit", order:4 }
+  ],
+  "合歡山主峰": [
+    { date:"2023-06-03", status:"summit", order:5 }
+  ],
+  "志佳陽大山": [
+    { date:"2023-10-15", status:"summit", order:6 }
+  ],
+  "桃山": [
+    { date:"2024-01-07", status:"summit", order:7 }
+  ],
+  "喀拉業山": [
+    { date:"2024-01-07", status:"summit", order:8 }
+  ],
+  "屏風山": [
+    { date:"2024-02-04", status:"summit", order:9 }
+  ],
+  "合歡山北峰": [
+    { date:"2024-02-29", status:"summit", order:10 }
+  ],
+  "合歡山西峰": [
+    { date:"2024-02-29", status:"summit", order:11 }
+  ],
+  "石門山": [
+    { date:"2024-02-29", status:"summit", order:12 }
+  ],
+  "玉山西峰": [
+    { date:"2025-09-01", status:"summit", order:13 }
+  ]
+
+  /* 二刷範例：
+  ,"合歡山東峰": [
+    { date:"2021-10-23", status:"summit", order:1 },
+    { date:"2026-08-10", status:"summit" }
+  ]
+  */
+
+  /* Attempt 範例：
+  ,"雪山北峰": [
+    { date:"2025-12-01", status:"attempt" }
+  ]
+  */
+};
+
+/* =========================================================
+   4. 以下不用改
+   ========================================================= */
+
+const peakMap = Object.fromEntries(peaks.map(p => [p.name,p]));
+const groupsEl = document.getElementById("groups");
+const searchEl = document.getElementById("search");
+let activeFilter = "all";
+
+function recordsFor(name){
+  return myRecords[name] || [];
+}
+
+function summitRecordsFor(name){
+  return recordsFor(name).filter(r => r.status === "summit");
+}
+
+function attemptRecordsFor(name){
+  return recordsFor(name).filter(r => r.status === "attempt");
+}
+
+function hasSummit(name){
+  return summitRecordsFor(name).length > 0;
+}
+
+function attemptOnly(name){
+  return !hasSummit(name) && attemptRecordsFor(name).length > 0;
+}
+
+function isRepeat(name){
+  return summitRecordsFor(name).length >= 2;
+}
+
+function formatDate(s){
+  if(!s) return "";
+  const [y,m,d] = s.split("-");
+  return `${y}.${m}.${d}`;
+}
+
+function statusFor(name){
+  const summits = summitRecordsFor(name);
+  const attempts = attemptRecordsFor(name);
+
+  if(summits.length){
+    const label = summits.length >= 2 ? `登頂 ${summits.length} 次` : "已登頂";
+    return {type:"summit",label};
+  }
+  if(attempts.length){
+    return {type:"attempt",label:"曾嘗試"};
+  }
+  return {type:"none",label:"未登頂"};
+}
+
+function recordText(name){
+  const rs = recordsFor(name);
+  if(!rs.length) return "";
+
+  const lines = rs
+    .slice()
+    .sort((a,b) => a.date.localeCompare(b.date))
+    .map(r => {
+      const type = r.status === "summit" ? "登頂" : "嘗試";
+      const order = r.order ? ` · 第 ${r.order} 座` : "";
+      return `${formatDate(r.date)} ${type}${order}`;
+    });
+
+  return lines.join("<br>");
+}
+
+function matchesFilter(name){
+  if(activeFilter === "summit") return hasSummit(name);
+  if(activeFilter === "attempt") return attemptOnly(name);
+  if(activeFilter === "none") return recordsFor(name).length === 0;
+  if(activeFilter === "repeat") return isRepeat(name);
+  return true;
+}
+
+function matchesSearch(name){
+  const q = searchEl.value.trim().toLowerCase();
+  if(!q) return true;
+  return name.toLowerCase().includes(q);
+}
+
+function updateSummary(){
+  const unique = peaks.filter(p => hasSummit(p.name)).length;
+  const summitRecords = peaks.reduce((n,p) => n + summitRecordsFor(p.name).length,0);
+  const attemptOnlyCount = peaks.filter(p => attemptOnly(p.name)).length;
+  const repeats = peaks.filter(p => isRepeat(p.name)).length;
+
+  document.getElementById("uniqueSummits").textContent = unique;
+  document.getElementById("summitRecords").textContent = summitRecords;
+  document.getElementById("attemptPeaks").textContent = attemptOnlyCount;
+  document.getElementById("repeatPeaks").textContent = repeats;
+  document.getElementById("overallBar").style.width = `${unique}%`;
+}
+
+function render(){
+  groupsEl.innerHTML = "";
+
+  posterGroups.forEach((group,index) => {
+    const validNames = group.peaks.filter(n => peakMap[n]);
+    const visibleNames = validNames.filter(n => matchesFilter(n) && matchesSearch(n));
+
+    if(!visibleNames.length) return;
+
+    const done = validNames.filter(hasSummit).length;
+    const pct = validNames.length ? (done / validNames.length * 100) : 0;
+
+    const wrap = document.createElement("article");
+    wrap.className = "group";
+    if(index < 3 || searchEl.value.trim() || activeFilter !== "all") wrap.classList.add("open");
+
+    wrap.innerHTML = `
+      <button class="group-head" type="button">
+        <div class="group-title">${group.name}</div>
+        <div class="group-meta">
+          <span class="group-count">${done} / ${validNames.length}</span>
+          <span class="chevron">⌄</span>
+        </div>
+      </button>
+      <div class="group-progress"><span style="width:${pct}%"></span></div>
+      <div class="group-body"></div>
+    `;
+
+    const body = wrap.querySelector(".group-body");
+
+    visibleNames
+      .map(n => peakMap[posterToPeak[n] || n])
+      .filter(Boolean)
+      .forEach(p => {
+        const st = statusFor(p.name);
+        const summitCount = summitRecordsFor(p.name).length;
+
+        const row = document.createElement("div");
+        row.className = "peak";
+        row.innerHTML = `
+          <div class="rank">${p.rank}</div>
+          <div class="peak-name">
+            ${displayNames[p.name] || p.name}
+            ${summitCount >= 2 ? `<span class="alt">二刷以上</span>` : ""}
+          </div>
+          <div class="height">${p.height} m</div>
+          <div class="record">
+            <span class="badge ${st.type}">${st.label}</span>
+            ${recordText(p.name) ? `<div class="dates">${recordText(p.name)}</div>` : ""}
+          </div>
+        `;
+        body.appendChild(row);
+      });
+
+    wrap.querySelector(".group-head").addEventListener("click",() => {
+      wrap.classList.toggle("open");
+    });
+
+    groupsEl.appendChild(wrap);
+  });
+}
+
+document.querySelectorAll(".filter").forEach(btn => {
+  btn.addEventListener("click",() => {
+    document.querySelectorAll(".filter").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeFilter = btn.dataset.filter;
+    render();
+  });
+});
+
+searchEl.addEventListener("input",render);
+
+updateSummary();
+render();
+</script>
+
+</body>
+</html>
