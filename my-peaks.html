@@ -426,9 +426,9 @@ footer{
   </div>
 
   <section class="hero">
-    <div class="eyebrow">MY BAIYUE JOURNEY</div>
+    <div class="eyebrow">100 Peaks of Taiwan</div>
     <h1>我的百岳進度</h1>
-    <div class="subtitle">100 Peaks (Baiyue) of Taiwan</div>
+    <div class="subtitle">MY 100 PEAKS JOURNEY</div>
     <p>
       依登山路線與群峰分類整理個人百岳紀錄。
       同一座山可記錄多次登頂，也可保留曾嘗試但未登頂的行程。
@@ -491,8 +491,7 @@ footer{
 <script>
 /* =========================================================
    1. 百岳基本資料
-   目前先依你相片中清楚可辨識的海報分類呈現。
-   其餘百岳先放在「其他百岳」，之後可再按原海報補齊分類。
+  
    ========================================================= */
 
 const peaks = [
@@ -621,6 +620,18 @@ const posterGroups = [
     peaks:["雪山東峰","雪山北峰","志佳陽大山"]
   },
   {
+    name:"大霸群峰",
+    peaks:["大霸尖山","小霸尖山","加利山","伊澤山"]
+  },
+  {
+    name:"武陵四秀",
+    peaks:["桃山","喀拉業山","池有山","品田山"]
+  },
+  {
+    name:"中橫四辣",
+    peaks:["畢祿山","羊頭山","白姑大山","屏風山"]
+  },
+  {
     name:"合歡群峰",
     peaks:["合歡山主峰","合歡山北峰","合歡山西峰","合歡山東峰","石門山"]
   },
@@ -683,18 +694,6 @@ const posterGroups = [
   {
     name:"馬博橫斷",
     peaks:["秀姑巒山","馬博拉斯山","馬利加南山","駒盆山","馬西山","喀西帕南山"]
-  },
-  {
-    name:"大霸群峰",
-    peaks:["大霸尖山","小霸尖山","加利山","伊澤山"]
-  },
-  {
-    name:"武陵四秀",
-    peaks:["桃山","喀拉業山","池有山","品田山"]
-  },
-  {
-    name:"中橫四辣",
-    peaks:["畢祿山","羊頭山","白姑大山","屏風山"]
   }
 ];
 
@@ -710,7 +709,7 @@ const displayNames = {
   "玉山主峰":"玉山主峰（玉山）"
 };
 
-/* poster 名稱 → 目前 peaks 資料中的正式 key */
+/* 目前 peaks 資料中的正式 key */
 const posterToPeak = {
   "南湖大山東峰":"南湖大山東峰",
   "南湖大山南峰":"南湖大山南峰",
@@ -731,7 +730,7 @@ const posterToPeak = {
    "attempt" = 曾嘗試但未登頂
 
    order:
-   你實體海報圈住的「第幾座百岳」。
+   第幾座百岳
    ========================================================= */
 
 const myRecords = {
@@ -739,7 +738,8 @@ const myRecords = {
     { date:"2021-10-23", status:"summit", order:1 }
   ],
   "玉山主峰": [
-    { date:"2021-11-03", status:"summit", order:2 }
+    { date:"2021-11-03", status:"summit", order:2 },
+    { date:"2025-09-01", status:"summit" }
   ],
   "雪山東峰": [
     { date:"2022-02-04", status:"summit", order:3 }
@@ -751,7 +751,8 @@ const myRecords = {
     { date:"2023-06-03", status:"summit", order:5 }
   ],
   "志佳陽大山": [
-    { date:"2023-10-15", status:"summit", order:6 }
+    { date:"2023-10-15", status:"summit", order:6 },
+    { date:"2026-05-24", status:"summit" }
   ],
   "桃山": [
     { date:"2024-01-07", status:"summit", order:7 }
@@ -773,7 +774,12 @@ const myRecords = {
   ],
   "玉山西峰": [
     { date:"2025-09-01", status:"summit", order:13 }
+  ],
+  ,"北大武山": [
+    { date:"2025-12-28", status:"attempt" }
   ]
+
+  
 
   /* 二刷範例：
   ,"合歡山東峰": [
