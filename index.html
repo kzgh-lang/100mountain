@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>100 Peaks (Baiyue) of Taiwan</title>
+
+<style>
+:root {
+  --paper: #f3efe7;
+  --card: #fffdf9;
+  --ink: #302d28;
+  --muted: #7f786f;
+  --gold: #A87328;
+  --line: #ddd5c8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Noto Sans TC", "PingFang TC",
+    "Microsoft JhengHei", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 15% 15%, rgba(168,115,40,.07), transparent 25%),
+    radial-gradient(circle at 85% 80%, rgba(85,100,75,.07), transparent 27%),
+    var(--paper);
+}
+
+.page {
+  width: min(1120px, 90vw);
+  margin: 0 auto;
+  padding: 72px 0 60px;
+}
+
+header {
+  max-width: 780px;
+  margin-bottom: 46px;
+}
+
+.eyebrow {
+  color: #8d857a;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(44px, 6.5vw, 76px);
+  line-height: .98;
+  letter-spacing: -.035em;
+  color: #342f29;
+}
+
+.zh-title {
+  margin-top: 18px;
+  font-size: 23px;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+.intro {
+  margin-top: 18px;
+  max-width: 650px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.card {
+  position: relative;
+  min-height: 235px;
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255,253,249,.92);
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(49,44,37,.05);
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease,
+    border-color .2s ease;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  right: -55px;
+  bottom: -70px;
+  width: 190px;
+  height: 190px;
+  border: 1px solid rgba(168,115,40,.12);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 28px rgba(168,115,40,.035),
+    0 0 0 58px rgba(168,115,40,.025);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(168,115,40,.55);
+  box-shadow: 0 16px 38px rgba(49,44,37,.10);
+}
+
+.card-number {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  color: var(--gold);
+  margin-bottom: 38px;
+}
+
+.card h2 {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 10px;
+  font-size: 25px;
+  line-height: 1.25;
+}
+
+.card p {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  max-width: 380px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.enter {
+  position: absolute;
+  z-index: 2;
+  right: 27px;
+  top: 27px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #8b8277;
+  transition: .2s;
+}
+
+.card:hover .enter {
+  color: var(--gold);
+  transform: translateX(3px);
+}
+
+.disabled {
+  cursor: default;
+  opacity: .62;
+}
+
+.disabled:hover {
+  transform: none;
+  border-color: var(--line);
+  box-shadow: 0 10px 30px rgba(49,44,37,.05);
+}
+
+.disabled .enter {
+  color: #aaa298;
+}
+
+.disabled:hover .enter {
+  color: #aaa298;
+  transform: none;
+}
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 42px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  color: #9b9388;
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  .page {
+    width: min(92vw, 600px);
+    padding: 45px 0 40px;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 205px;
+  }
+
+  .card-number {
+    margin-bottom: 28px;
+  }
+
+  footer {
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+</style>
+</head>
+
+<body>
+<main class="page">
+
+  <header>
+    <div class="eyebrow">TAIWAN MOUNTAIN TOOLS</div>
+
+    <h1>
+      100 Peaks (Baiyue)<br>
+      of Taiwan
+    </h1>
+
+    <div class="zh-title">台灣百岳工具箱</div>
+
+    <div class="intro">
+      從百岳名稱、經典登山路線到個人登頂紀錄與裝備整理，
+      將台灣高山相關的小工具集中在這裡。
+    </div>
+  </header>
+
+  <section class="grid">
+
+    <a class="card" href="baiyue.html">
+      <div class="card-number">01</div>
+      <div class="enter">進入 →</div>
+      <h2>百岳名稱挑戰</h2>
+      <p>
+        100 座百岳，你記得多少？
+        輸入山名，逐一解鎖百岳、山脈與登山路線進度。
+      </p>
+    </a>
+
+    <a class="card" href="routes.html">
+      <div class="card-number">02</div>
+      <div class="enter">進入 →</div>
+      <h2>登山路線挑戰</h2>
+      <p>
+        北一段、南二段、武陵四秀、玉山群峰。
+        測試你對台灣經典高山路線與所屬百岳的熟悉程度。
+      </p>
+    </a>
+
+    <a class="card" href="my-peaks.html">
+      <div class="card-number">03</div>
+      <div class="enter">進入 →</div>
+      <h2>我的百岳進度</h2>
+      <p>
+        記錄實際登頂過的百岳，
+        查看整體完成率，以及各山脈與登山路線的完成進度。
+      </p>
+    </a>
+
+    <a class="card" href="gear.html">
+      <div class="card-number">04</div>
+      <div class="enter">進入 →</div>
+      <h2>登山裝備列表</h2>
+      <p>
+        依行程整理裝備與行前檢查清單，
+        從單日健行到多日高山行程都能快速確認。
+      </p>
+    </a>
+
+  </section>
+
+  <footer>
+    <span>100 Peaks (Baiyue) of Taiwan</span>
+    <span>Taiwan Mountain Tools</span>
+  </footer>
+
+</main>
+</body>
+</html>
