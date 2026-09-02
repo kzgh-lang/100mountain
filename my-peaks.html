@@ -741,7 +741,7 @@ footer{
 
 
   <div class="friend-status">
-    輸入自己的名稱後，按「載入／建立」即可開始記錄百岳進度。紀錄會自動儲存在目前使用的瀏覽器中。<br>
+    輸入自己的名稱後，按「載入／建立」即可開始記錄百岳進度。<br>紀錄會自動儲存在目前使用的瀏覽器中。<br><br>
     如需更換手機、電腦或瀏覽器，請先按「匯出備份碼」並保存該段文字；到新裝置後輸入自己的名稱，並按「載入／建立」，再按「匯入備份碼」，貼上備份碼即可還原所有百岳紀錄。
   </div>
   
@@ -1192,7 +1192,7 @@ function updateFriendStatus(message=""){
   if(!status) return;
 
   if(!activeFriendName){
-    status.textContent = message || "請輸入名稱，以載入或建立這部裝置上的紀錄。";
+    status.textContent = message || "先輸入名稱才能開始記錄喔。";
     if(tools) tools.classList.add("hidden");
     return;
   }
@@ -1204,7 +1204,7 @@ function updateFriendStatus(message=""){
   status.innerHTML = message || `
     <strong>${activeFriendName}｜已完成 ${completed} / 100</strong><br>
     紀錄儲存在目前瀏覽器。<br>
-    如需更換手機、電腦或瀏覽器，請先按「匯出備份碼」並保存該段文字；到新裝置後輸入自己的名稱，按「匯入備份碼」，貼上備份碼即可還原名稱及所有百岳紀錄。
+    
   `;
   
   if(tools) tools.classList.remove("hidden");
