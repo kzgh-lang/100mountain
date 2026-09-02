@@ -599,19 +599,202 @@ footer{
     justify-content:flex-start;
   }
   footer{flex-direction:column}
+
+.friend-panel{
+  max-width:620px;
+  margin:-4px auto 28px;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:rgba(255,250,242,.9);
+  box-shadow:var(--shadow);
 }
+
+.friend-login{
+  display:flex;
+  gap:9px;
+}
+
+.friend-input{
+  min-width:0;
+  flex:1;
+  border:1px solid var(--line);
+  background:#fffaf2;
+  color:var(--ink);
+  border-radius:12px;
+  padding:11px 13px;
+  font:inherit;
+  outline:none;
+}
+
+.friend-input:focus{
+  border-color:rgba(168,115,40,.7);
+  box-shadow:0 0 0 3px rgba(168,115,40,.08);
+}
+
+.friend-button,
+.record-action,
+.record-delete{
+  appearance:none;
+  border:1px solid var(--line);
+  border-radius:10px;
+  font:inherit;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.friend-button{
+  padding:10px 15px;
+  background:var(--ink);
+  color:#fff;
+  border-color:var(--ink);
+}
+
+.friend-status{
+  margin-top:9px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.6;
+}
+
+.friend-editor{
+  margin-top:9px;
+  display:flex;
+  justify-content:flex-end;
+  gap:6px;
+  flex-wrap:wrap;
+}
+
+.record-action{
+  padding:6px 9px;
+  background:#fffaf2;
+  color:var(--gold);
+  font-size:11px;
+}
+
+.record-action:hover{
+  border-color:var(--gold);
+}
+
+.record-delete{
+  padding:4px 7px;
+  background:transparent;
+  color:#9a6f4b;
+  font-size:10px;
+}
+
+.friend-empty{
+  padding:18px;
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
+}
+
+@media(max-width:600px){
+  .user-switch{
+    max-width:100%;
+    overflow-x:auto;
+  }
+
+  .user-tab{
+    flex:0 0 auto;
+    padding:9px 12px;
+  }
+
+  .friend-login{
+    flex-direction:column;
+  }
+
+  .friend-button{
+    width:100%;
+  }
+
+  .friend-editor{
+    justify-content:flex-start;
+  }
+}
+
+
+
+
+  
 </style>
 </head>
 
 <body>
 <main class="page">
 
-  <div class="user-switch-wrap">
-    <div class="user-switch" aria-label="切換百岳進度">
-      <button class="user-tab active" type="button" data-user="K">K 的進度</button>
-      <button class="user-tab" type="button" data-user="T">T 的進度</button>
-    </div>
+
+
+
+<div class="user-switch-wrap">
+  <div class="user-switch" aria-label="切換百岳進度">
+    <button class="user-tab active" type="button" data-user="K">K 的進度</button>
+    <button class="user-tab" type="button" data-user="T">T 的進度</button>
+    <button class="user-tab" type="button" data-user="FRIEND">朋朋的進度</button>
   </div>
+</div>
+
+<div id="friendPanel" class="friend-panel hidden">
+  <div class="friend-login">
+    <input
+      id="friendName"
+      class="friend-input"
+      type="text"
+      placeholder="輸入朋朋名稱"
+      autocomplete="off"
+    >
+    <button id="loadFriend" class="friend-button" type="button">
+      載入／建立
+    </button>
+  </div>
+
+  <div id="friendStatus" class="friend-status">
+    此裝置尚未載入朋朋紀錄
+  </div>
+</div>
+  
+
+
+<div id="friendPanel" style="display:none; margin:14px auto 24px; max-width:520px;">
+  <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+    <input
+      id="friendName"
+      type="text"
+      placeholder="輸入朋朋名稱"
+      style="
+        flex:1;
+        min-width:180px;
+        padding:11px 14px;
+        border:1px solid #d8cdbd;
+        border-radius:12px;
+        background:#fffdf9;
+        font:inherit;
+      "
+    >
+
+    <button
+      id="loadFriend"
+      type="button"
+      style="
+        padding:11px 16px;
+        border:0;
+        border-radius:12px;
+        background:#302d28;
+        color:white;
+        font-weight:800;
+        cursor:pointer;
+      "
+    >
+      載入／建立
+    </button>
+  </div>
+
+  <div id="friendStatus"
+       style="margin-top:8px; text-align:center; font-size:12px; color:#8b8175;">
+  </div>
+</div>
+  
 
   <div class="topbar">
     <a class="back" href="index.html">← 返回台灣百岳工具箱</a>
@@ -1005,6 +1188,213 @@ const userRecords = {
 
 let activeUser = "K";
 
+let activeUser = "K";
+let activeFriendName = "";
+
+userRecords.FRIEND = {};
+
+function normalizeFriendName(name){
+  return name.trim();
+}
+
+function friendStorageKey(name){
+  return "baiyue_friend_v1_" +
+    normalizeFriendName(name).toLowerCase();
+}
+
+function loadFriendRecords(name){
+  const key = friendStorageKey(name);
+  const raw = localStorage.getItem(key);
+
+  if(!raw) return {};
+
+  try{
+    const parsed = JSON.parse(raw);
+
+    if(parsed && typeof parsed === "object"){
+      return parsed;
+    }
+
+    return {};
+  }catch(err){
+    console.error("朋友紀錄讀取失敗",err);
+    return {};
+  }
+}
+
+function saveFriendRecords(){
+  if(activeUser !== "FRIEND" || !activeFriendName) return;
+
+  localStorage.setItem(
+    friendStorageKey(activeFriendName),
+    JSON.stringify(userRecords.FRIEND || {})
+  );
+
+  updateFriendStatus();
+}
+
+function updateFriendStatus(){
+  const status = document.getElementById("friendStatus");
+  if(!status) return;
+
+  if(!activeFriendName){
+    status.textContent = "請輸入名稱，以載入或建立這部裝置上的紀錄";
+    return;
+  }
+
+  const completed = peaks.filter(p => hasSummit(p.name)).length;
+
+  status.textContent =
+    `${activeFriendName}｜已完成 ${completed} / 100｜紀錄儲存在目前瀏覽器`;
+}
+
+function nextFriendOrder(){
+  let maxOrder = 0;
+
+  peaks.forEach(p => {
+    summitRecordsFor(p.name).forEach(r => {
+      if(Number.isFinite(Number(r.order))){
+        maxOrder = Math.max(maxOrder, Number(r.order));
+      }
+    });
+  });
+
+  return maxOrder + 1;
+}
+
+function addFriendRecord(peakName,status){
+  if(activeUser !== "FRIEND") return;
+
+  if(!activeFriendName){
+    alert("請先輸入朋朋名稱並載入紀錄");
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0,10);
+
+  const date = prompt(
+    status === "summit"
+      ? `輸入 ${peakName} 的登頂日期`
+      : `輸入 ${peakName} 的嘗試日期`,
+    today
+  );
+
+  if(date === null) return;
+
+  const cleanDate = date.trim();
+
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)){
+    alert("日期格式請使用 YYYY-MM-DD，例如 2026-09-02");
+    return;
+  }
+
+  if(!userRecords.FRIEND[peakName]){
+    userRecords.FRIEND[peakName] = [];
+  }
+
+  if(status === "summit"){
+    const alreadySummited =
+      userRecords.FRIEND[peakName]
+        .some(r => r.status === "summit");
+
+    const newRecord = {
+      date:cleanDate,
+      status:"summit"
+    };
+
+    if(!alreadySummited){
+      newRecord.order = nextFriendOrder();
+    }
+
+    userRecords.FRIEND[peakName].push(newRecord);
+
+  }else{
+    userRecords.FRIEND[peakName].push({
+      date:cleanDate,
+      status:"attempt"
+    });
+  }
+
+  userRecords.FRIEND[peakName].sort(
+    (a,b) => a.date.localeCompare(b.date)
+  );
+
+  saveFriendRecords();
+  refreshCurrentView();
+}
+
+function deleteFriendRecord(peakName,index){
+  if(activeUser !== "FRIEND") return;
+
+  const records = userRecords.FRIEND[peakName] || [];
+  const record = records[index];
+
+  if(!record) return;
+
+  const type =
+    record.status === "summit"
+      ? "登頂"
+      : "嘗試";
+
+  const ok = confirm(
+    `確定刪除 ${peakName} 的 ${formatDate(record.date)} ${type}紀錄？`
+  );
+
+  if(!ok) return;
+
+  records.splice(index,1);
+
+  if(records.length === 0){
+    delete userRecords.FRIEND[peakName];
+  }
+
+  rebuildFriendOrders();
+  saveFriendRecords();
+  refreshCurrentView();
+}
+
+function rebuildFriendOrders(){
+  const firstSummits = [];
+
+  peaks.forEach(p => {
+    const records =
+      (userRecords.FRIEND[p.name] || [])
+        .filter(r => r.status === "summit")
+        .sort((a,b) => a.date.localeCompare(b.date));
+
+    records.forEach(r => {
+      delete r.order;
+    });
+
+    if(records.length){
+      firstSummits.push({
+        peakName:p.name,
+        record:records[0]
+      });
+    }
+  });
+
+  firstSummits.sort(
+    (a,b) => a.record.date.localeCompare(b.record.date)
+  );
+
+  firstSummits.forEach((item,index) => {
+    item.record.order = index + 1;
+  });
+}
+
+function refreshCurrentView(){
+  updateSummary();
+  render();
+  updateFriendStatus();
+
+  if(activeView === "order"){
+    renderSummitOrder();
+    viewHintEl.textContent =
+      `共 ${peaks.filter(p => hasSummit(p.name)).length} 座`;
+  }
+}
+  
 /* =========================================================
    4. 以下不用改
    ========================================================= */
@@ -1017,6 +1407,10 @@ const viewToggleEl = document.getElementById("viewToggle");
 const viewTitleEl = document.getElementById("viewTitle");
 const viewHintEl = document.getElementById("viewHint");
 const userTabs = document.querySelectorAll(".user-tab");
+const friendPanel = document.getElementById("friendPanel");
+const friendNameInput = document.getElementById("friendName");
+const loadFriendBtn = document.getElementById("loadFriend");
+const friendStatus = document.getElementById("friendStatus");
 let activeFilter = "all";
 let activeView = "routes";
 
@@ -1064,45 +1458,102 @@ function statusFor(name){
   return {type:"none",label:"未登頂"};
 }
 
+
 function recordHTML(name){
-  const rs = recordsFor(name)
-    .slice()
+  const originalRecords = recordsFor(name);
+
+  const rs = originalRecords
+    .map((record,index) => ({
+      ...record,
+      originalIndex:index
+    }))
     .sort((a,b) => a.date.localeCompare(b.date));
-
-  if(!rs.length) return "";
-
-  const summitRows = rs.filter(r => r.status === "summit");
-  const attemptRows = rs.filter(r => r.status === "attempt");
-  const orderRecord = summitRows.find(r => r.order);
 
   let html = "";
 
-  if(orderRecord){
-    html += `<div class="order-big">第 ${orderRecord.order} 座</div>`;
+  if(rs.length){
+    const summitRows = rs.filter(r => r.status === "summit");
+    const attemptRows = rs.filter(r => r.status === "attempt");
+    const orderRecord = summitRows.find(r => r.order);
+
+    if(orderRecord){
+      html += `<div class="order-big">第 ${orderRecord.order} 座</div>`;
+    }
+
+    const lines = [];
+
+    summitRows.forEach((r,i) => {
+      const label = `第 ${i + 1} 次登頂`;
+
+      lines.push(`
+        <div class="record-line">
+          <span class="record-label">${label}</span>
+          <strong>${formatDate(r.date)}</strong>
+
+          ${
+            activeUser === "FRIEND"
+              ? `<button
+                   class="record-delete"
+                   type="button"
+                   data-delete-peak="${name}"
+                   data-delete-index="${r.originalIndex}"
+                 >刪除</button>`
+              : ""
+          }
+        </div>
+      `);
+    });
+
+    attemptRows.forEach(r => {
+      lines.push(`
+        <div class="record-line">
+          <span class="record-label">嘗試日期</span>
+          <strong>${formatDate(r.date)}</strong>
+
+          ${
+            activeUser === "FRIEND"
+              ? `<button
+                   class="record-delete"
+                   type="button"
+                   data-delete-peak="${name}"
+                   data-delete-index="${r.originalIndex}"
+                 >刪除</button>`
+              : ""
+          }
+        </div>
+      `);
+    });
+
+    if(lines.length){
+      html += `<div class="record-lines">${lines.join("")}</div>`;
+    }
   }
 
-  const lines = [];
+  if(activeUser === "FRIEND"){
+    html += `
+      <div class="friend-editor">
+        <button
+          class="record-action"
+          type="button"
+          data-add-summit="${name}"
+        >
+          ＋登頂
+        </button>
 
-  summitRows.forEach((r, i) => {
-    const label = `第 ${i + 1} 次登頂`;
-    lines.push(
-      `<div class="record-line"><span class="record-label">${label}</span><strong>${formatDate(r.date)}</strong></div>`
-    );
-  });
-
-  attemptRows.forEach(r => {
-    lines.push(
-      `<div class="record-line"><span class="record-label">嘗試日期</span><strong>${formatDate(r.date)}</strong></div>`
-    );
-  });
-
-  if(lines.length){
-    html += `<div class="record-lines">${lines.join("")}</div>`;
+        <button
+          class="record-action"
+          type="button"
+          data-add-attempt="${name}"
+        >
+          ＋曾嘗試
+        </button>
+      </div>
+    `;
   }
 
   return html;
 }
-
+  
 function matchesFilter(name){
   if(activeFilter === "summit") return hasSummit(name);
   if(activeFilter === "attempt") return attemptOnly(name);
@@ -1248,28 +1699,108 @@ document.querySelectorAll(".filter").forEach(btn => {
     btn.classList.add("active");
     activeFilter = btn.dataset.filter;
     render();
+
+      if(activeUser === "FRIEND"){
+    groupsEl.querySelectorAll("[data-add-summit]").forEach(btn => {
+      btn.addEventListener("click",event => {
+        event.stopPropagation();
+        addFriendRecord(
+          btn.dataset.addSummit,
+          "summit"
+        );
+      });
+    });
+
+    groupsEl.querySelectorAll("[data-add-attempt]").forEach(btn => {
+      btn.addEventListener("click",event => {
+        event.stopPropagation();
+        addFriendRecord(
+          btn.dataset.addAttempt,
+          "attempt"
+        );
+      });
+    });
+
+    groupsEl.querySelectorAll("[data-delete-peak]").forEach(btn => {
+      btn.addEventListener("click",event => {
+        event.stopPropagation();
+
+        deleteFriendRecord(
+          btn.dataset.deletePeak,
+          Number(btn.dataset.deleteIndex)
+        );
+      });
+    });
+  }
+  
   });
 });
+
+
 
 
 userTabs.forEach(btn => {
   btn.addEventListener("click", () => {
     const nextUser = btn.dataset.user;
+
+    if(nextUser === "FRIEND"){
+      friendPanel.style.display = "block";
+    }else{
+      friendPanel.style.display = "none";
+    }
+
     if(nextUser === activeUser) return;
 
     activeUser = nextUser;
 
-    userTabs.forEach(b => b.classList.toggle("active", b.dataset.user === activeUser));
+    userTabs.forEach(b =>
+      b.classList.toggle("active", b.dataset.user === activeUser)
+    );
 
     updateSummary();
     render();
 
     if(activeView === "order"){
       renderSummitOrder();
-      viewHintEl.textContent = `共 ${peaks.filter(p => hasSummit(p.name)).length} 座`;
+      viewHintEl.textContent =
+        `共 ${peaks.filter(p => hasSummit(p.name)).length} 座`;
     }
   });
 });
+  
+
+
+loadFriendBtn.addEventListener("click", () => {
+  const name = friendNameInput.value.trim();
+
+  if(!name){
+    friendStatus.textContent = "請先輸入朋朋的名稱";
+    return;
+  }
+
+  activeFriendName = name;
+
+  userRecords.FRIEND = loadFriendRecords(name);
+
+  activeUser = "FRIEND";
+
+  userTabs.forEach(b =>
+    b.classList.toggle("active", b.dataset.user === "FRIEND")
+  );
+
+  friendStatus.textContent =
+    `${name} 的紀錄已載入`;
+
+  updateSummary();
+  render();
+
+  if(activeView === "order"){
+    renderSummitOrder();
+    viewHintEl.textContent =
+      `共 ${peaks.filter(p => hasSummit(p.name)).length} 座`;
+  }
+});
+  
 
 viewToggleEl.addEventListener("click",() => {
   setView(activeView === "routes" ? "order" : "routes");
